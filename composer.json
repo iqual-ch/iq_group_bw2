@@ -1,15 +1,15 @@
 {
-  "name": "iqual/iq_group_xcampaign",
-  "description": "Iqual xCampaign",
+  "name": "iqual/iq_group_bw2",
+  "description": "Iqual bw2",
   "type": "drupal-custom-module",
   "repositories": [
     {
       "type": "composer",
-      "url": "https://github.com/iqual-ch/iq_group_xcampaign"
+      "url": "https://github.com/iqual-ch/iq_group_bw2"
     }
   ],
   "require": {
     "iqual/iq_group": "*",
-    "drupal/xcampaign_api": "*"
+    "drupal/bw2_api": "*"
   }
 }

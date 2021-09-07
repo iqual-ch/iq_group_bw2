@@ -1,0 +1,6 @@
+services:
+  iq_group_bw2.bw2_subscriber:
+    class: Drupal\iq_group_bw2\EventSubscriber\bw2Subscriber
+    arguments: ['@bw2_api']
+    tags:
+      - {name: event_subscriber}
