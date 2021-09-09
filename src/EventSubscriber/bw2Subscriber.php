@@ -34,8 +34,7 @@ class bw2Subscriber implements EventSubscriberInterface {
    */
   public static function getSubscribedEvents() {
     return [
-      IqGroupEvents::USER_PROFILE_UPDATE => [['updatebw2Contact', 300]],
-      // IqGroupEvents::USER_PROFILE_DELETE => [['deletebw2Contact', 300]],
+      IqGroupEvents::USER_PROFILE_UPDATE => [['updatebw2Contact', 300]]
     ];
   }
 
@@ -59,24 +58,4 @@ class bw2Subscriber implements EventSubscriberInterface {
       }
     }
   }
-
-  //  /**
-  //  * Delete a bw2 contact.
-  //  *
-  //  * @param \Drupal\iq_group\Event\IqGroupEvent $event
-  //  *   The event.
-  //  */
-  // public function deletebw2Contact(IqGroupEvent $event) {
-  //   if ($event && $event->getUser()->id()) {
-  //     \Drupal::logger('iq_group_bw2')->notice('bw2 delete event triggered for ' . $event->getUser()->id());
-
-  //     $user = $event->getUser();
-
-  //     $bw2_id = $user->field_iq_group_bw2_id->value;
-
-  //     if (!empty($bw2_id) || $bw2_id != 0) {
-  //       $contact = $this->bw2ApiService->deleteContact($bw2_id);
-  //     }
-  //   }
-  // }
 }
