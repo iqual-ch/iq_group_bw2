@@ -63,10 +63,10 @@ class bw2Subscriber implements EventSubscriberInterface {
    */
   public function convertDataForBw2($user){
     $langCode = $this->bw2ApiService->getLanguageCode($user->getPreferredLangcode());
-    $countryCode = $this->bw2ApiService->getCountryCode(reset($user->get('field_iq_user_base_address')->getValue())['country_code']);
+    $addresses = $user->get('field_iq_user_base_address')->getValue();
+    $address = reset($addresses);
+    $countryCode = $this->bw2ApiService->getCountryCode($address['country_code']);
     $newsletter = ($user->hasField('field_iq_group_preferences') && !$user->get('field_iq_group_preferences')->isEmpty()) ? true : false;
-    $address = $user->get('field_iq_user_base_address')->getValue();
-    $address = reset($address);
     $profile_data = [
       'Account_Active' => $user->status->value,
       // 'Account_Salutation' => ,
