@@ -4,8 +4,6 @@ namespace Drupal\iq_group_bw2\EventSubscriber;
 
 use Drupal\iq_group\Event\IqGroupEvent;
 use Drupal\iq_group\IqGroupEvents;
-use Drupal\iq_group\bw2Events;
-use Drupal\iq_group\Event\bw2Event;
 use Drupal\bw2_api\bw2ApiServiceInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -66,28 +64,26 @@ class bw2Subscriber implements EventSubscriberInterface {
   public function convertDataForBw2($user){
     $langCode = $this->bw2ApiService->getLanguageCode($user->getPreferredLangcode());
     $countryCode = $this->bw2ApiService->getCountryCode(reset($user->get('field_iq_user_base_address')->getValue())['country_code']);
+    $newsletter = ($user->hasField('field_iq_group_preferences') && !$user->get('field_iq_group_preferences')->isEmpty()) ? true : false;
+    $address = $user->get('field_iq_user_base_address')->getValue();
+    $address = reset($address);
     $profile_data = [
       'Account_Active' => $user->status->value,
-      // 'Account_Salutation' => reset($user->get('field_iq_user_base_address')->getValue())['given_name'],
-      // 'Account_Drupal_ID' => $user->id(),
-      'Account_FirstName' => reset($user->get('field_iq_user_base_address')->getValue())['given_name'],
-      'Account_LastName' => reset($user->get('field_iq_user_base_address')->getValue())['family_name'],
-      // 'Account_AddressLine1' => reset($user->get('field_iq_user_base_address')->getValue())['address_line1'],
-      'Account_Street' => reset($user->get('field_iq_user_base_address')->getValue())['address_line1'],
-      // 'Account_POBox' => reset($user->get('field_iq_user_base_address')->getValue())['street'],
-      'Account_PostalCode' => reset($user->get('field_iq_user_base_address')->getValue())['postal_code'],
-      'Account_City' => reset($user->get('field_iq_user_base_address')->getValue())['locality'],
+      // 'Account_Salutation' => ,
+      // 'Account_Drupal_ID' => ,
+      'Account_FirstName' => $address['given_name'],
+      'Account_LastName' => $address['family_name'],
+      // 'Account_AddressLine1' => ,
+      'Account_Street' => $address['address_line1'],
+      // 'Account_POBox' => ,
+      'Account_PostalCode' => $address['postal_code'],
+      'Account_City' => $address['locality'],
       'Account_Country_Dimension_ID' => $countryCode,
       'Account_Email1' => $user->getEmail(),
-      'Account_Language_Dimension_ID' => $langCode
+      'Account_Language_Dimension_ID' => $langCode,
+      'Visitor_AllowEmail' => $newsletter
     ];
 
-    // if ($user->hasField('field_iq_group_preferences') && !$user->get('field_iq_group_preferences')->isEmpty()) {
-    //   $profile_data['Visitor_AllowEmail'] = array_filter(array_column($user->field_iq_group_preferences->getValue(), 'target_id'));
-    // }
-
-    $profile_data['Visitor_AllowEmail'] = 1;
-   
     return $profile_data;
   }
 
