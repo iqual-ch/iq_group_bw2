@@ -50,8 +50,8 @@ class bw2Subscriber implements EventSubscriberInterface {
 
       /** @var \Drupal\user\UserInterface $user */
       $user = $event->getUser();
+      $profile_data = $this->convertDataForBw2($user);
       if ($user->hasField('field_iq_group_bw2_id') && !empty($user->get('field_iq_group_bw2_id')->getValue())) {
-        $profile_data = $this->convertDataForBw2($user);
         $this->bw2ApiService->editContact($user->get('field_iq_group_bw2_id')->getValue(), $profile_data);
       } else {
         $bw2_id = $this->bw2ApiService->createContact($profile_data);
@@ -82,15 +82,12 @@ class bw2Subscriber implements EventSubscriberInterface {
       'Account_Language_Dimension_ID' => $langCode
     ];
 
-    if ($user->hasField('field_iq_group_preferences') && !$user->get('field_iq_group_preferences')->isEmpty()) {
-      $profile_data['Visitor_AllowEmail'] = array_filter(array_column($user->field_iq_group_preferences->getValue(), 'target_id'));
-    }
-    // if ($user->hasField('field_iq_group_bw2_id') && !empty($user->get('field_iq_group_bw2_id')->getValue())) {
-    //   $this->bw2ApiService->editContact($user->field_iq_group_bw2_id->value, $profile_data);
-    // } else {
-    //   $bw2_id = $this->bw2ApiService->createContact($email, $profile_data);
-    //   $user->set('field_iq_group_bw2_id', $bw2_id);
+    // if ($user->hasField('field_iq_group_preferences') && !$user->get('field_iq_group_preferences')->isEmpty()) {
+    //   $profile_data['Visitor_AllowEmail'] = array_filter(array_column($user->field_iq_group_preferences->getValue(), 'target_id'));
     // }
+
+    $profile_data['Visitor_AllowEmail'] = 1;
+   
     return $profile_data;
   }
 
