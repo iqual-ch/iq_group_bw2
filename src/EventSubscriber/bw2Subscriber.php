@@ -63,19 +63,18 @@ class bw2Subscriber implements EventSubscriberInterface {
    */
   public function convertDataForBw2($user){
     $langCode = $this->bw2ApiService->getLanguageCode($user->getPreferredLangcode());
-    $addresses = $user->get('field_iq_user_base_address')->getValue();
-    $address = reset($addresses);
-    $countryCode = $this->bw2ApiService->getCountryCode($address['country_code']);
     $newsletter = ($user->hasField('field_iq_group_preferences') && !$user->get('field_iq_group_preferences')->isEmpty()) ? true : false;
+    $address = $user->get('field_iq_user_base_address')->getValue();
+    $address = reset($address);
+    $countryCode = $this->bw2ApiService->getCountryCode($address['country_code']);
     $profile_data = [
       'Account_Active' => $user->status->value,
-      // 'Account_Salutation' => ,
-      // 'Account_Drupal_ID' => ,
+      'Account_Salutation' => $user->get('field_iq_user_base_salutation')->getValue(),
       'Account_FirstName' => $address['given_name'],
       'Account_LastName' => $address['family_name'],
-      // 'Account_AddressLine1' => ,
-      'Account_Street' => $address['address_line1'],
-      // 'Account_POBox' => ,
+      'Account_AddressLine1' => $address['address_line1'],
+      'Account_Street' => $address['address_line2'],
+      'Account_POBox' => $user->get('field_iq_user_base_adress_pobox')->getValue(),
       'Account_PostalCode' => $address['postal_code'],
       'Account_City' => $address['locality'],
       'Account_Country_Dimension_ID' => $countryCode,
