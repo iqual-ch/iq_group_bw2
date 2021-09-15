@@ -4,3 +4,6 @@ services:
     arguments: ['@bw2_api']
     tags:
       - {name: event_subscriber}
+  iq_group_bw2.importer:
+    class: Drupal\iq_group_bw2\Service\Importer
+    arguments: ['@bw2_api']
