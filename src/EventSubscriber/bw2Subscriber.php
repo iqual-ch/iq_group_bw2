@@ -48,10 +48,10 @@ class bw2Subscriber implements EventSubscriberInterface {
 
       /** @var \Drupal\user\UserInterface $user */
       $user = $event->getUser();
-      
+
       if ($user->hasField('field_iq_group_bw2_id')){
         /**
-         * 3 cases: 
+         * 3 cases:
          * - newly created user, not active yet
          * - newly created user, active
          * - existing user (with bw2_id)
@@ -63,7 +63,9 @@ class bw2Subscriber implements EventSubscriberInterface {
         }
         if (!empty($user->get('field_iq_group_bw2_id')->getValue())){
           $profile_data = $this->convertDataForBw2($user);
-          $this->bw2ApiService->editContact($user->get('field_iq_group_bw2_id')->getValue(), $profile_data);
+          $bw2_id = $user->get('field_iq_group_bw2_id')->getValue();
+          $bw2_id = reset($bw2_id)['value'];
+          $this->bw2ApiService->editContact($bw2_id, $profile_data);
         }
       }
     }
@@ -88,14 +90,18 @@ class bw2Subscriber implements EventSubscriberInterface {
     $address = $user->get('field_iq_user_base_address')->getValue();
     $address = reset($address);
     $countryCode = $this->bw2ApiService->getCountryCode($address['country_code']);
+    $salutation = $user->get('field_iq_user_base_salutation')->getValue();
+    $salutation = reset($salutation);
+    $pobox = $user->get('field_iq_user_base_adress_pobox')->getValue();
+    $pobox = reset($pobox);
     $profile_data = [
       'Account_Active' => $user->status->value,
-      'Account_Salutation' => $user->get('field_iq_user_base_salutation')->getValue(),
+      'Account_Salutation' => $salutation['value'],
       'Account_FirstName' => $address['given_name'],
       'Account_LastName' => $address['family_name'],
       'Account_AddressLine1' => $address['address_line1'],
       'Account_Street' => $address['address_line2'],
-      'Account_POBox' => $user->get('field_iq_user_base_adress_pobox')->getValue(),
+      'Account_POBox' => $pobox['value'],
       'Account_PostalCode' => $address['postal_code'],
       'Account_City' => $address['locality'],
       'Account_Country_Dimension_ID' => $countryCode,
