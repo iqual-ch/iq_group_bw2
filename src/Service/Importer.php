@@ -2,8 +2,8 @@
 
 namespace Drupal\iq_group_bw2\Service;
 
-use Drupal\Core\Database\Database;
-
+use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\bw2_api\bw2ApiServiceInterface;
 /**
  *
  */
@@ -12,18 +12,12 @@ class Importer {
   /**
    * Importer service constructor.
    *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   The entity type manager.
    * @param ConfigFactoryInterface $config_factory
    *   The config factory.
-   * @param RequestStack $request_stack
-   *   The current request stack.
-   * @param \Drupal\bw2_api\bw2ApiServiceInterface $bw2_api_service
+   * @param bw2ApiServiceInterface $bw2_api_service
    *   The BW2 Api service
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $config_factory, RequestStack $request_stack, bw2ApiServiceInterface $bw2_api_service) {
-    $this->entityTypeManager = $entity_type_manager;
-    $this->request = $request_stack->getCurrentRequest();
+  public function __construct(ConfigFactoryInterface $config_factory, bw2ApiServiceInterface $bw2_api_service) {
     $this->config = $config_factory->get('bw2_api.settings');
     $this->bw2ApiService = $bw2_api_service;
   }
@@ -35,6 +29,9 @@ class Importer {
     \Drupal::logger('iq_group_bw2')->notice('starting check');
     $current_item_version = $this->config->get('current_item_version');
     $data = $this->bw2ApiService->getContacts($current_item_version);
+    $config = \Drupal::getContainer()->get('config.factory')->getEditable('bw2_api.settings');
+    $config->set('current_item_version', $data['MaxItemVersion']);
+    $config->save();
     if (!empty($data['DataList'])){
         $this->doImport($data['DataList']);
     }

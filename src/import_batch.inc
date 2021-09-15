@@ -5,7 +5,6 @@
  */
 
 use Drupal\Core\StringTranslation\TranslatableMarkup;
-use Drupal\node\Entity\Node;
 use Drupal\Core\Database\Database;
 
 /**
@@ -44,7 +43,7 @@ function _iq_group_bw2_import_users($users, $langCodes, $countryCodes) {
     $user = $this->processUser($users[$i]);
 
     \Drupal::entityTypeManager()->getStorage('user')->resetCache([$user->getId()]);
-    
+
   }
   gc_collect_cycles();
 
@@ -67,7 +66,7 @@ function processUser($user_data){
         ->fields('entity_id')
         ->condition('user__field_iq_group_bw2_id', $bw2_id, 'LIKE');
     $result = $result->execute();
-    
+
     if (!empty($result)){
         $user = \Drupal\user\Entity\User::load($result[0]);
     }
@@ -78,7 +77,7 @@ function processUser($user_data){
         $user->set('field_iq_group_bw2_id', $bw2_id);
         $user->setEmail($user_data['Account_Email1']);
         $user->save();
-    } 
+    }
 }
 
 /**

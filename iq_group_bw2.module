@@ -6,8 +6,8 @@
 /**
  * Implements hook_cron().
  */
-function sqs_import_cron() {
-    $interval = 86400;
+function iq_group_bw2_cron() {
+    $interval = 60;
     $next_execution = \Drupal::state()->get('iq_group_bw2.next_execution');
     $next_execution = !empty($next_execution) ? $next_execution : 0;
 
