@@ -1,0 +1,29 @@
+<?php
+/**
+ * @file
+ */
+
+/**
+ * Implements hook_cron().
+ */
+function sqs_import_cron() {
+    $interval = 86400;
+    $next_execution = \Drupal::state()->get('iq_group_bw2.next_execution');
+    $next_execution = !empty($next_execution) ? $next_execution : 0;
+
+    if (REQUEST_TIME >= $next_execution) {
+      _iq_group_bw2_check_data();
+      \Drupal::state()->set('iq_group_bw2.next_execution', REQUEST_TIME + $interval);
+    }
+    \Drupal::state()->set('iq_group_bw2.next_execution', REQUEST_TIME);
+  }
+
+  /**
+   *
+   */
+  function _iq_group_bw2_check_data() {
+    \Drupal::logger('iq_group_bw2')->notice('Starting cron based check / import');
+    $importer = \Drupal::service('iq_group_bw2.importer');
+    $importer->doCheckData();
+    \Drupal::logger('iq_group_bw2')->notice('Ended cron based check / import');
+  }
