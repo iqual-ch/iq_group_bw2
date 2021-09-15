@@ -51,7 +51,7 @@ class bw2Subscriber implements EventSubscriberInterface {
       $profile_data = $this->convertDataForBw2($user);
       if ($user->hasField('field_iq_group_bw2_id') && !empty($user->get('field_iq_group_bw2_id')->getValue())) {
         $this->bw2ApiService->editContact($user->get('field_iq_group_bw2_id')->getValue(), $profile_data);
-      } else {
+      } elseif($user->isActive()) {
         $bw2_id = $this->bw2ApiService->createContact($profile_data);
         $user->set('field_iq_group_bw2_id', $bw2_id);
       }
@@ -59,10 +59,20 @@ class bw2Subscriber implements EventSubscriberInterface {
   }
 
   /**
+   * Performs a check of latest bw2 updates and update drupal users accordingly.
+   *
+   */
+  public function updateDrupalContacts() {
+    $current_item_version = $this->bw2ApiService->auth['current_item_version'];
+    // TO DO
+  }
+
+  /**
    * Helper function to convert the user data to the bw2 format.
    */
   public function convertDataForBw2($user){
     $langCode = $this->bw2ApiService->getLanguageCode($user->getPreferredLangcode());
+    $test = $user->get('field_iq_group_preferences');
     $newsletter = ($user->hasField('field_iq_group_preferences') && !$user->get('field_iq_group_preferences')->isEmpty()) ? true : false;
     $address = $user->get('field_iq_user_base_address')->getValue();
     $address = reset($address);
