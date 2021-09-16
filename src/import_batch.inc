@@ -10,7 +10,7 @@ use Drupal\Core\Database\Database;
 /**
  *
  */
-function _iq_group_bw2_import_users($users, $langCodes, $countryCodes) {
+function _iq_group_bw2_import_users($users, $langCodes, $countryCodes, &$context) {
 
   if (count($users) < 1) {
     return;
@@ -78,6 +78,7 @@ function processUser($user_data){
         $user->setEmail($user_data['Account_Email1']);
         $user->save();
     }
+    return $user;
 }
 
 /**
