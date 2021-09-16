@@ -22,33 +22,21 @@ class Importer {
     $this->bw2ApiService = $bw2_api_service;
   }
 
-  /**
-   * Check if there are anything new since last run
-   */
-  public function doCheckData() {
-    \Drupal::logger('iq_group_bw2')->notice('starting check');
+  public function getOperations(){
+    $langCodes = $this->bw2ApiService->getLanguageInformation();
+    $countryCodes = $this->bw2ApiService->getCountryInformation();
     $current_item_version = $this->config->get('current_item_version');
     $data = $this->bw2ApiService->getContacts($current_item_version);
-    if (!empty($data['DataList'])){
-        $this->doImport($data['DataList']);
-    }
-    else{
-        \Drupal::logger('iq_group_bw2')->notice('nothing to import');
-    }
-    $config = \Drupal::getContainer()->get('config.factory')->getEditable('bw2_api.settings');
-    $config->set('current_item_version', $data['MaxItemVersion']);
-    $config->save();
-    return FALSE;
+    $operations[] = ['_iq_group_bw2_import_users', [$data, $langCodes, $countryCodes]];
+    return $operations;
   }
 
   /**
    *
    */
-  public function doImport($users) {
+  public function doImport($operations) {
     \Drupal::logger('iq_group_bw2')->notice('starting import');
-    $langCodes = $this->bw2ApiService->getLanguageInformation();
-    $countryCodes = $this->bw2ApiService->getCountryInformation();
-    $operations[] = ['_iq_group_bw2_import_users', [$users, $langCodes, $countryCodes]];
+    
     $batch = [
       'title' => t('Import'),
       'operations' => $operations,
@@ -59,6 +47,7 @@ class Importer {
       'error_message' => t('An error occurred during processing'),
     ];
     batch_set($batch);
+
   }
 
 /**

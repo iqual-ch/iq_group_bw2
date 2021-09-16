@@ -10,8 +10,9 @@ use Drupal\Core\Database\Database;
 /**
  *
  */
-function _iq_group_bw2_import_users($users, $langCodes, $countryCodes, &$context) {
-
+function _iq_group_bw2_import_users($data, $langCodes, $countryCodes, &$context) {
+  $users = $data['DataList'];
+  $max_item_version = $data['MaxItemVersion'];
   if (count($users) < 1) {
     return;
   }
@@ -22,9 +23,11 @@ function _iq_group_bw2_import_users($users, $langCodes, $countryCodes, &$context
     $context['sandbox']['start'] = microtime(TRUE);
 
   }
-  if (!isset($context['results']['imported']['users']) || empty($context['results']['imported']['users'])) {
+  if (!isset($context['results']['users']) || empty($context['results']['users'])) {
+    $context['results']['users'] = $users;
     $context['results']['imported']['users'] = 0;
     $context['results']['updated']['users'] = 0;
+    $context['results']['max_item_version'] = $max_item_version; 
   }
   $indexes = range($context['sandbox']['progress'], min($context['sandbox']['progress'] + 99, $context['sandbox']['max']));
   foreach ($indexes as $i) {
@@ -89,6 +92,9 @@ function _iq_group_bw2_finished_import($success, $results, $operations) {
   if (!empty($results['users'])) {
     $msg .= '<br />Imported ' . $results['imported']['users'] . ' users and updated ' . $results['updated']['users'];
   }
+  $config = \Drupal::getContainer()->get('config.factory')->getEditable('bw2_api.settings');
+  $config->set('current_item_version', $results['max_item_version']);
+  $config->save();
   \Drupal::logger('iq_group_bw2_import')->notice($msg);
   drupal_set_message(new TranslatableMarkup($msg));
   return 0;

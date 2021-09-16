@@ -1,0 +1,6 @@
+services:
+  ex_batch_drush9.commands:
+    class: \Drupal\iq_group_bw2\Commands\BW2ImportCommand
+    tags:
+      - { name: drush.command }
+    arguments: ["@iq_group_bw2.importer", "@logger.factory"]
