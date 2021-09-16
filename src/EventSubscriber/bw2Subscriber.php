@@ -94,6 +94,8 @@ class bw2Subscriber implements EventSubscriberInterface {
     $salutation = reset($salutation);
     $pobox = $user->get('field_iq_user_base_adress_pobox')->getValue();
     $pobox = reset($pobox);
+    $birthdate = $user->get('field_gcb_custom_birth_date')->getValue();
+    $birthdate = reset($birthdate);
     $profile_data = [
       'Account_Active' => $user->status->value,
       'Account_Salutation' => $salutation['value'],
@@ -107,7 +109,8 @@ class bw2Subscriber implements EventSubscriberInterface {
       'Account_Country_Dimension_ID' => $countryCode,
       'Account_Email1' => $user->getEmail(),
       'Account_Language_Dimension_ID' => $langCode,
-      'Visitor_AllowEmail' => $newsletter
+      'Visitor_AllowEmail' => $newsletter,
+      'Account_Birthday' => $birthdate
     ];
 
     return $profile_data;
