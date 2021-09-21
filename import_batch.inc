@@ -14,6 +14,7 @@ function _iq_group_bw2_import_users($data, $langCodes, $countryCodes, &$context)
   $users = $data['DataList'];
   $max_item_version = $data['MaxItemVersion'];
   if (count($users) < 1) {
+    \Drupal::logger('iq_group_bw2_import')->notice('nothing to import');
     return;
   }
   if (empty($context['sandbox'])) {
@@ -124,15 +125,24 @@ function processUser($user_data, $langCodes, $countryCodes, &$context){
         $user->set('field_gcb_custom_birth_date',$date->format('Y-m-d'));
       }
     }
-    $user->save();
-    // TO DO : manage roles
-    $group = \Drupal\group\Entity\Group::load(1);
-    $group->addMember($user);
-    $group->save();
     if ($user_data['Visitor_AllowEmail']){
-      $group = \Drupal\group\Entity\Group::load(2);
-      $group->addMember($user);
-      $group->save();
+      $user->set('field_iq_group_preferences', [1,2]);
+    }
+    else{
+      $user->set('field_iq_group_preferences', [1]);
+    }
+    $user->save();
+
+    // If new user we add him to the general group
+    if (!$result){
+      $group_general = \Drupal\group\Entity\Group::load(1);
+      \Drupal\iq_group\Controller\UserController::addGroupRoleToUser($group_general, $user, 'subscription-subscriber');
+    }
+
+    if ($user_data['Visitor_AllowEmail']){
+      $group_newsletter = \Drupal\group\Entity\Group::load(2);
+      \Drupal\iq_group\Controller\UserController::addGroupRoleToUser($group_newsletter, $user, 'subscription-subscriber');
+      \Drupal::logger('iq_group_bw2_import')->notice('user added to the newsletter group');
     }
     return $user;
 }
