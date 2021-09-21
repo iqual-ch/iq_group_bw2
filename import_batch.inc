@@ -12,9 +12,7 @@ use Drupal\Core\Database\Database;
  */
 function _iq_group_bw2_import_users($data, $langCodes, $countryCodes, &$context) {
   $users = $data['DataList'];
-  $config = \Drupal::getContainer()->get('config.factory')->getEditable('bw2_api.settings');
-  $config->set('current_item_version', $data['MaxItemVersion']);
-  $config->save();
+  $max_item_version = $data['MaxItemVersion'];
   if (count($users) < 1) {
     return;
   }
@@ -78,10 +76,23 @@ function processUser($user_data, $langCodes, $countryCodes, &$context){
       $user = \Drupal\user\Entity\User::create();
       $user->setPassword('test');
       $user->enforceIsNew();
+      // There could be multiple accounts with the same E-Mail from BW2, so we have to create unique name for drupal
+      $exists = user_load_by_name($user_data['Account_Email1']);
+      if ($exists){
+        $i = 1;
+        $name = $user_data['Account_Email1'] . '-' . $i;
+        while(user_load_by_name($name)){
+          $i++;
+          $name = $user_data['Account_Email1'] . '-' . $i;
+        }
+      }
+      else{
+        $name = $user_data['Account_Email1'];
+      }
+      $user->set('name',$name);
+      $user->set('field_iq_group_bw2_id', $bw2_id);
       $context['results']['imported']['users']++;
     }
-    $user->set('field_iq_group_bw2_id', $bw2_id);
-    $user->set('name',$user_data['Account_Email1']);
     $user->setEmail($user_data['Account_Email1']);
     $user->set('field_iq_user_base_salutation', $user_data['Account_Salutation']);
     $userCountryCode = getCountryCode($user_data['Account_Country_Dimension_ID'],$countryCodes);
@@ -101,19 +112,28 @@ function processUser($user_data, $langCodes, $countryCodes, &$context){
     if ($user_data['Account_Active']){
       $user->activate();
     }
-    if ($user_data['Visitor_AllowEmail']){
-      $user->set('field_iq_group_preferences', [2]);
-    }
+
+    //TO DO: one day difference from bw2?
     if ($user_data['Account_Birthday']){
       preg_match('/Date\(-?([0-9]{12})\)/',$user_data['Account_Birthday'], $matches);
       if (!empty($matches)){
         $timestamp = intval($matches[1]) / 1000;
         $date = new \DateTime();
+        $date->setTimezone(new DateTimeZone('Europe/Zurich'));
         $date->setTimestamp($timestamp);
         $user->set('field_gcb_custom_birth_date',$date->format('Y-m-d'));
       }
     }
     $user->save();
+    // TO DO : manage roles
+    $group = \Drupal\group\Entity\Group::load(1);
+    $group->addMember($user);
+    $group->save();
+    if ($user_data['Visitor_AllowEmail']){
+      $group = \Drupal\group\Entity\Group::load(2);
+      $group->addMember($user);
+      $group->save();
+    }
     return $user;
 }
 
@@ -145,5 +165,11 @@ function _iq_group_bw2_finished_import($success, $results, $operations) {
   }
   \Drupal::logger('iq_group_bw2_import')->notice($msg);
   drupal_set_message(new TranslatableMarkup($msg));
+  if (isset($results['max_item_version']) && !empty($results['max_item_version'])){
+     $config = \Drupal::getContainer()->get('config.factory')->getEditable('bw2_api.settings');
+    $config->set('current_item_version', $results['max_item_version']);
+    $config->save();
+    \Drupal::logger('iq_group_bw2_import')->notice('Configuration updated to ' . $results['max_item_version']);
+  }
   return 0;
 }

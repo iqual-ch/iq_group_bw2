@@ -36,7 +36,7 @@ class Importer {
    */
   public function doImport($operations) {
     \Drupal::logger('iq_group_bw2')->notice('starting import');
-    
+
     $batch = [
       'title' => t('Import'),
       'operations' => $operations,
@@ -47,42 +47,5 @@ class Importer {
       'error_message' => t('An error occurred during processing'),
     ];
     batch_set($batch);
-
   }
-
-/**
- * TO DO
- */
-// function convertDataFromBw2($data){
-//     $langCode = $this->bw2ApiService->getLanguageCode($user->getPreferredLangcode());
-//     $test = $user->get('field_iq_group_preferences');
-//     $newsletter = ($user->hasField('field_iq_group_preferences') && !$user->get('field_iq_group_preferences')->isEmpty()) ? true : false;
-//     $address = $user->get('field_iq_user_base_address')->getValue();
-//     $address = reset($address);
-//     $countryCode = $this->bw2ApiService->getCountryCode($address['country_code']);
-//     $salutation = $user->get('field_iq_user_base_salutation')->getValue();
-//     $salutation = reset($salutation);
-//     $pobox = $user->get('field_iq_user_base_adress_pobox')->getValue();
-//     $pobox = reset($pobox);
-//     $profile_data = [
-//       'status' => $data['Account_Active'],
-//       'field_iq_user_base_salutation' => $data['Account_Salutation'],
-//       'field_iq_group_first_name' => $data['Account_FirstName'],
-//       'field_iq_group_last_name' => $data['Account_LastName'],
-//       'field_iq_group_base_address_0_address_address_line1' => $data['Account_AddressLine1'],
-//       'field_iq_group_base_address_0_address_address_line2' => $data['Account_Street'],
-//       'field_iq_user_base_adress_pobox' => $data['Account_POBox'],
-//       'field_iq_group_base_address_0_address_postal_code' => $data['Account_PostalCode'],
-//       'field_iq_group_base_address_0_address_locality' => $data['Account_City'],
-//       'field_iq_group_base_address_0_address_country_code' => $data['Account_Country_Dimension_ID'],
-//       'mail' => $data['Account_Email1'],
-//       'field_iq_group_first_name' => $data['Account_Language_Dimension_ID'],
-//       'field_iq_group_preferences' => ($data['Visitor_AllowEmail']) ? 2 : 0,
-//       'roles' => [
-//         DRUPAL_AUTHENTICATED_RID => 'authenticated user'
-//       ]
-//     ];
-// }
-
-
 }

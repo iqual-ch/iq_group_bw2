@@ -72,14 +72,6 @@ class bw2Subscriber implements EventSubscriberInterface {
     }
   }
 
-  /**
-   * Performs a check of latest bw2 updates and update drupal users accordingly.
-   *
-   */
-  public function updateDrupalContacts() {
-    $current_item_version = $this->bw2ApiService->auth['current_item_version'];
-    // TO DO
-  }
 
   /**
    * Helper function to convert the user data to the bw2 format.
