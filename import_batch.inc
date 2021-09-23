@@ -113,17 +113,11 @@ function processUser($user_data, $langCodes, $countryCodes, &$context){
     if ($user_data['Account_Active']){
       $user->activate();
     }
-
-    //TO DO: one day difference from bw2?
+    
     if ($user_data['Account_Birthday']){
-      preg_match('/Date\(-?([0-9]{12})\)/',$user_data['Account_Birthday'], $matches);
-      if (!empty($matches)){
-        $timestamp = intval($matches[1]) / 1000;
-        $date = new \DateTime();
-        $date->setTimezone(new DateTimeZone('Europe/Zurich'));
-        $date->setTimestamp($timestamp);
-        $user->set('field_gcb_custom_birth_date',$date->format('Y-m-d'));
-      }
+      $date = substr($user_data['Account_Birthday'],0,10);
+      \Drupal::logger('iq_group_bw2')->notice('user has a birth date: ' . $date);
+      $user->set('field_gcb_custom_birth_date',$date);
     }
     if ($user_data['Visitor_AllowEmail']){
       $user->set('field_iq_group_preferences', [1,2]);
@@ -142,7 +136,7 @@ function processUser($user_data, $langCodes, $countryCodes, &$context){
     if ($user_data['Visitor_AllowEmail']){
       $group_newsletter = \Drupal\group\Entity\Group::load(2);
       \Drupal\iq_group\Controller\UserController::addGroupRoleToUser($group_newsletter, $user, 'subscription-subscriber');
-      \Drupal::logger('iq_group_bw2_import')->notice('user added to the newsletter group');
+      \Drupal::logger('iq_group_bw2')->notice('user added to the newsletter group');
     }
     return $user;
 }
