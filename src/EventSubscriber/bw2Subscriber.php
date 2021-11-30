@@ -36,6 +36,7 @@ class bw2Subscriber implements EventSubscriberInterface {
     ];
   }
 
+
   /**
    * Update a bw2 contact.
    *
@@ -45,8 +46,13 @@ class bw2Subscriber implements EventSubscriberInterface {
   public function updatebw2Contact(IqGroupEvent $event) {
     if ($event && $event->getUser()->id()) {
       \Drupal::logger('iq_group_bw2')->notice('bw2 update event triggered for ' . $event->getUser()->id());
-      // If user is anonymous it means the update came from the import task -> we do nothing
-      if(\Drupal::currentUser()->isAnonymous()){
+      
+      $uri = \Drupal::request()->getRequestUri();
+      \Drupal::logger('iq_group_bw2')->notice('location: '.$uri);
+
+      // If user is anonymous and the referer does not come from opt-in 
+      // then it means the update came from the import task -> we do nothing
+      if(\Drupal::currentUser()->isAnonymous() && strpos($uri, 'de/auth') === false){
         \Drupal::logger('iq_group_bw2')->notice('bw2 update event triggered by anonymous user - do nothing.');
       }
       else{
