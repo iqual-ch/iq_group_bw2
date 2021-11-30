@@ -2,7 +2,7 @@ name: iQual bw2 module
 description: Integration between the iq_group module and bw2
 package: Custom
 type: module
-core_version_requirement: ^8 || ^9
+core_version_requirement: ^8.8 || ^9
 dependencies:
   - iq_group:iq_group
   - bw2_api:bw2_api
