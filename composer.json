@@ -9,7 +9,7 @@
     }
   ],
   "require": {
-    "iqual/iq_group": "*",
-    "iqual/bw2_api": "*"
+    "iqual/iq_group": "^3.0",
+    "iqual/bw2_api": "^2.0"
   }
 }
