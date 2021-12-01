@@ -168,7 +168,7 @@ function _iq_group_bw2_finished_import($success, $results, $operations) {
     $msg .= '<br />Imported ' . $results['imported']['users'] . ' users and updated ' . $results['updated']['users'];
   }
   \Drupal::logger('iq_group_bw2_import')->notice($msg);
-  drupal_set_message(new TranslatableMarkup($msg));
+  \Drupal::messenger()->addStatus(new TranslatableMarkup($msg));
   if (isset($results['max_item_version']) && !empty($results['max_item_version'])){
      $config = \Drupal::getContainer()->get('config.factory')->getEditable('bw2_api.settings');
     $config->set('current_item_version', $results['max_item_version']);
