@@ -10,7 +10,7 @@ use Drupal\Core\Database\Database;
 /**
  *
  */
-function _iq_group_bw2_import_users($users, $max_item_version, $langCodes, $countryCodes, &$context) {
+function _iq_group_bw2_import_users($users, $max_item_version, $total_users, $langCodes, $countryCodes, &$context) {
   if (count($users) < 1) {
     \Drupal::logger('iq_group_bw2_import')->notice('nothing to import');
     return;
@@ -18,7 +18,7 @@ function _iq_group_bw2_import_users($users, $max_item_version, $langCodes, $coun
   if (empty($context['sandbox'])) {
     $context['sandbox']['progress'] = 0;
     $context['sandbox']['current_index'] = 0;
-    $context['sandbox']['max'] = count($users) - 1;
+    $context['sandbox']['max'] = $total_users - 1;
     $context['sandbox']['start'] = microtime(TRUE);
 
   }
@@ -26,6 +26,7 @@ function _iq_group_bw2_import_users($users, $max_item_version, $langCodes, $coun
     $context['results']['users'] = $users;
     $context['results']['imported']['users'] = 0;
     $context['results']['updated']['users'] = 0;
+    $context['results']['error']['users'] = 0;
     $context['results']['max_item_version'] = $max_item_version;
   }
   $indexes = range($context['sandbox']['progress'], min($context['sandbox']['progress'] + 99, $context['sandbox']['max']));
@@ -42,10 +43,14 @@ function _iq_group_bw2_import_users($users, $max_item_version, $langCodes, $coun
     if ($users[$i] == NULL) {
       continue;
     }
-    $user = processUser($users[$i], $langCodes, $countryCodes, $context);
-
-    \Drupal::entityTypeManager()->getStorage('user')->resetCache([$user->id()]);
-
+    if (!empty($users[$i]['Account_Email1'])) {
+      $user = processUser($users[$i], $langCodes, $countryCodes, $context);
+      \Drupal::entityTypeManager()->getStorage('user')->resetCache([$user->id()]);
+    }
+    else{
+      $context['results']['error']['users']++;
+    }
+    
   }
   gc_collect_cycles();
 
@@ -111,7 +116,7 @@ function processUser($user_data, $langCodes, $countryCodes, &$context){
     if ($user_data['Account_Active']){
       $user->activate();
     }
-    
+
     if ($user_data['Account_Birthday']){
       $date = substr($user_data['Account_Birthday'],0,10);
       \Drupal::logger('iq_group_bw2')->notice('user has a birth date: ' . $date);
@@ -123,6 +128,7 @@ function processUser($user_data, $langCodes, $countryCodes, &$context){
     else{
       $user->set('field_iq_group_preferences', [1]);
     }
+    
     $user->save();
 
     // If new user we add him to the general group
@@ -164,9 +170,10 @@ function _iq_group_bw2_finished_import($success, $results, $operations) {
   $msg = 'Import finished';
   if (!empty($results['users'])) {
     $msg .= '<br />Imported ' . $results['imported']['users'] . ' users and updated ' . $results['updated']['users'];
+    $msg .= '<br />Errors: ' . $results['error']['users'];
   }
   \Drupal::logger('iq_group_bw2_import')->notice($msg);
-  
+
   if (isset($results['max_item_version']) && !empty($results['max_item_version'])){
      $config = \Drupal::getContainer()->get('config.factory')->getEditable('bw2_api.settings');
     $config->set('current_item_version', $results['max_item_version']);
