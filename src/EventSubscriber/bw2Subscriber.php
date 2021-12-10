@@ -45,18 +45,13 @@ class bw2Subscriber implements EventSubscriberInterface {
    */
   public function updatebw2Contact(IqGroupEvent $event) {
     if ($event && $event->getUser()->id()) {
-      \Drupal::logger('iq_group_bw2')->notice('bw2 update event triggered for ' . $event->getUser()->id());
-      
       $uri = \Drupal::request()->getRequestUri();
-      \Drupal::logger('iq_group_bw2')->notice('location: '.$uri);
-
       // If user is anonymous and the referer does not come from opt-in 
       // then it means the update came from the import task -> we do nothing
       if(\Drupal::currentUser()->isAnonymous() && strpos($uri, 'de/auth') === false){
         \Drupal::logger('iq_group_bw2')->notice('bw2 update event triggered by anonymous user - do nothing.');
       }
       else{
-        \Drupal::logger('iq_group_bw2')->notice('bw2 update event triggered by authenticated user.');
         /** @var \Drupal\user\UserInterface $user */
         $user = $event->getUser();
         if ($user->hasField('field_iq_group_bw2_id')){
@@ -85,6 +80,7 @@ class bw2Subscriber implements EventSubscriberInterface {
 
   /**
    * Helper function to convert the user data to the bw2 format.
+   *  @var \Drupal\user\UserInterface $user
    */
   public function convertDataForBw2($user){
     $langCode = $this->bw2ApiService->getLanguageCode($user->getPreferredLangcode());
