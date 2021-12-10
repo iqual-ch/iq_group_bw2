@@ -28,9 +28,9 @@ class Importer {
     $current_item_version = $this->config->get('current_item_version');
     $data = $this->bw2ApiService->getContacts($current_item_version);
     $operations = [];
-    if (!empty($data)) {
-      foreach (array_chunk($data, 100) as $batchId => $sub_array) {
-        $operations[] = ['_iq_group_bw2_import_users', [$sub_array, $langCodes, $countryCodes]];
+    if (!empty($data['DataList'])) {
+      foreach (array_chunk($data, 100) as $batchId => $users) {
+        $operations[] = ['_iq_group_bw2_import_users', [$users, $data['max_item_version'], $langCodes, $countryCodes]];
       }
     }
     return $operations;

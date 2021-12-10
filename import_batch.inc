@@ -10,9 +10,7 @@ use Drupal\Core\Database\Database;
 /**
  *
  */
-function _iq_group_bw2_import_users($data, $langCodes, $countryCodes, &$context) {
-  $users = $data['DataList'];
-  $max_item_version = $data['MaxItemVersion'];
+function _iq_group_bw2_import_users($users, $max_item_version, $langCodes, $countryCodes, &$context) {
   if (count($users) < 1) {
     \Drupal::logger('iq_group_bw2_import')->notice('nothing to import');
     return;
@@ -168,7 +166,7 @@ function _iq_group_bw2_finished_import($success, $results, $operations) {
     $msg .= '<br />Imported ' . $results['imported']['users'] . ' users and updated ' . $results['updated']['users'];
   }
   \Drupal::logger('iq_group_bw2_import')->notice($msg);
-  drupal_set_message(new TranslatableMarkup($msg));
+  
   if (isset($results['max_item_version']) && !empty($results['max_item_version'])){
      $config = \Drupal::getContainer()->get('config.factory')->getEditable('bw2_api.settings');
     $config->set('current_item_version', $results['max_item_version']);
