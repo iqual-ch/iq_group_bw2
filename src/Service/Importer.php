@@ -27,7 +27,12 @@ class Importer {
     $countryCodes = $this->bw2ApiService->getCountryInformation();
     $current_item_version = $this->config->get('current_item_version');
     $data = $this->bw2ApiService->getContacts($current_item_version);
-    $operations[] = ['_iq_group_bw2_import_users', [$data, $langCodes, $countryCodes]];
+    $operations = [];
+    if (!empty($data)) {
+      foreach (array_chunk($data, 100) as $batchId => $sub_array) {
+        $operations[] = ['_iq_group_bw2_import_users', [$sub_array, $langCodes, $countryCodes]];
+      }
+    }
     return $operations;
   }
 
