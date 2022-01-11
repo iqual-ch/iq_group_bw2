@@ -119,7 +119,6 @@ function processUser($user_data, $langCodes, $countryCodes, &$context){
 
     if ($user_data['Account_Birthday']){
       $date = substr($user_data['Account_Birthday'],0,10);
-      \Drupal::logger('iq_group_bw2')->notice('user has a birth date: ' . $date);
       $user->set('field_gcb_custom_birth_date',$date);
     }
     if ($user_data['Visitor_AllowEmail']){
@@ -131,11 +130,14 @@ function processUser($user_data, $langCodes, $countryCodes, &$context){
     
     $user->save();
 
+    \Drupal::logger('iq_group_bw2')->notice('user ' . $bw2_id . ' imported');
+
     // If new user we add him to the general group
     if (!$result){
       $group_general = \Drupal\group\Entity\Group::load(1);
       \Drupal\iq_group\Controller\UserController::addGroupRoleToUser($group_general, $user, 'subscription-subscriber');
     }
+
 
     if ($user_data['Visitor_AllowEmail']){
       $group_newsletter = \Drupal\group\Entity\Group::load(2);
