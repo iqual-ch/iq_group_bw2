@@ -30,7 +30,7 @@ class Importer {
     $total_users = count($data['DataList']);
     $operations = [];
     
-    $resumeId = '-2144249217';
+    $resumeId = '-2144237137';
     $resume_key = array_search($resumeId, array_column($data['DataList'], 'Account_ID'));
     \Drupal::logger('iq_group_bw2')->notice('resume at '. $resume_key);
     $remainingUsers = array_slice($data['DataList'], $resume_key);

@@ -61,9 +61,17 @@ class IqGroupBw2WebformSubmissionHandler extends \Drupal\webform\Plugin\WebformH
     }
     if ($form_state->getValue('customer_address')) {
       $user_data['field_iq_user_base_address']['address_line1'] =  $form_state->getValue('customer_address');
+    }
+    if ($form_state->getValue('customer_address_2')) {
       $user_data['field_iq_user_base_address']['address_line2'] =  $form_state->getValue('customer_address_2');
+    }
+    if ($form_state->getValue('customer_city')) {
       $user_data['field_iq_user_base_address']['locality'] =  $form_state->getValue('customer_city');
+    }
+    if ($form_state->getValue('customer_postal_code')) {
       $user_data['field_iq_user_base_address']['postal_code'] =  $form_state->getValue('customer_postal_code');
+    }
+    if ($form_state->getValue('customer_country')) {
       $user_data['field_iq_user_base_address']['country_code'] =  $form_state->getValue('customer_country');
     }
     if ($form_state->getValue('customer_birth_date')) {
@@ -85,7 +93,7 @@ class IqGroupBw2WebformSubmissionHandler extends \Drupal\webform\Plugin\WebformH
     // Create the user, register him to the iq group and attribute the submission to the user.
     else  {
       $user = UserController::createMember($user_data);
-      $store = \Drupal::service('user.shared_tempstore')->get('iq_group.user_status');
+      $store = \Drupal::service('tempstore.shared')->get('iq_group.user_status');
       $store->set($user->id().'_pending_activation', true);
       $webform_submission->setOwnerId($user->id())->save();
       $group_general = \Drupal\group\Entity\Group::load(1);
