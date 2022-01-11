@@ -29,8 +29,15 @@ class Importer {
     $data = $this->bw2ApiService->getContacts($current_item_version);
     $total_users = count($data['DataList']);
     $operations = [];
+    
+    $resumeId = '-2144249217';
+    $resumeId = '-2147483512';
+    $resume_key = array_search($resumeId, array_column($data['DataList'], 'Account_ID'));
+    $remainingUsers = array_slice($data['DataList'], $resume_key + 1);
+    $total_users = count($remainingUsers);
+
     if ($total_users > 0) {
-      foreach (array_chunk($data['DataList'], 100) as $batchId => $users) {
+      foreach (array_chunk($remainingUsers, 100) as $batchId => $users) {
         $operations[] = ['_iq_group_bw2_import_users', [$users, $data['max_item_version'], $total_users, $langCodes, $countryCodes]];
       }
     }
