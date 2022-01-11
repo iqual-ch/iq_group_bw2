@@ -32,15 +32,15 @@ class IqGroupBw2WebformSubmissionHandler extends \Drupal\webform\Plugin\WebformH
 
     $user = NULL;
 
-    if ($form_state->getValue('customer_email')) {
+    if ($form_state->getValue('customer_mail')) {
       $user = \Drupal::entityTypeManager()->getStorage('user')->loadByProperties(
         [
-          'mail' => $form_state->getValue('customer_email')
+          'mail' => $form_state->getValue('customer_mail')
         ]
       );
       if (count($user) == 0){
         $userExists = FALSE;
-        $user_data['name'] = $form_state->getValue('customer_email');
+        $user_data['name'] = $form_state->getValue('customer_mail');
         $user_data['mail'] = $user_data['name'];
         $currentLanguage = \Drupal::languageManager()->getCurrentLanguage()->getId();;
         $user_data['preferred_langcode'] = $currentLanguage;
@@ -60,11 +60,11 @@ class IqGroupBw2WebformSubmissionHandler extends \Drupal\webform\Plugin\WebformH
       $user_data['field_iq_user_base_address']['family_name'] = $form_state->getValue('customer_last_name');
     }
     if ($form_state->getValue('customer_address')) {
-      $user_data['field_iq_user_base_address']['address_line1'] =  $form_state->getValue('customer_address')['address'];
-      $user_data['field_iq_user_base_address']['address_line2'] =  $form_state->getValue('customer_address')['address_2'];
-      $user_data['field_iq_user_base_address']['locality'] =  $form_state->getValue('customer_address')['city'];
-      $user_data['field_iq_user_base_address']['postal_code'] =  $form_state->getValue('customer_address')['postal_code'];
-      $user_data['field_iq_user_base_address']['country_code'] =  $form_state->getValue('customer_address')['country'];
+      $user_data['field_iq_user_base_address']['address_line1'] =  $form_state->getValue('customer_address');
+      $user_data['field_iq_user_base_address']['address_line2'] =  $form_state->getValue('customer_address_2');
+      $user_data['field_iq_user_base_address']['locality'] =  $form_state->getValue('customer_city');
+      $user_data['field_iq_user_base_address']['postal_code'] =  $form_state->getValue('customer_postal_code');
+      $user_data['field_iq_user_base_address']['country_code'] =  $form_state->getValue('customer_country');
     }
     if ($form_state->getValue('customer_birth_date')) {
       $user_data['field_gcb_custom_birth_date'] = $form_state->getValue('customer_birth_date');
