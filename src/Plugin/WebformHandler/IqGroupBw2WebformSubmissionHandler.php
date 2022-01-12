@@ -97,7 +97,13 @@ class IqGroupBw2WebformSubmissionHandler extends \Drupal\webform\Plugin\WebformH
     // If the user does not exists and he wants to register to the newsletter,
     // Create the user, register him to the iq groups and attribute the submission to the user.
     else if (!empty($form_state->getValue('customer_newsletter'))) {
-      $user = UserController::createMember($user_data);
+      if (!empty(\Drupal::config('iq_group.settings')->get('default_redirection'))) {
+        $destination = \Drupal::config('iq_group.settings')->get('default_redirection');
+      }
+      else {
+        $destination = '/member-area';
+      }
+      $user = UserController::createMember($user_data, [], $destination . '&source_form=' . rawurlencode($webform_submission->getWebform()->id()));
       $store = \Drupal::service('tempstore.shared')->get('iq_group.user_status');
       $store->set($user->id().'_pending_activation', true);
       $webform_submission->setOwnerId($user->id())->save();
