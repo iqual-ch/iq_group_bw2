@@ -15,7 +15,7 @@ function _iq_group_bw2_import_users($users, $max_item_version, $total_users, $la
     \Drupal::logger('iq_group_bw2_import')->notice('nothing to import');
     return;
   }
-  if (empty($context['sandbox'])) {
+  if (!isset($context['sandbox']['progress'])) {
     $context['sandbox']['progress'] = 0;
     $context['sandbox']['current_index'] = 0;
     $context['sandbox']['max'] = $total_users - 1;
@@ -55,6 +55,11 @@ function _iq_group_bw2_import_users($users, $max_item_version, $total_users, $la
   gc_collect_cycles();
 
   $context['message'] = 'Processed ' . $processed_abs . ' of ' . ($context['sandbox']['max'] + 1) . ' records (' . round($processed_rel) . ' %). Elapsed time: ' . round($time_elapsed, 2) . ' estimated time: ' . round($time_estimated, 2) . ' s';
+
+  if ($context['sandbox']['progress'] != $context['sandbox']['max']) {
+    $context['finished'] = $context['sandbox']['progress'] / $context['sandbox']['max'];
+  }
+
 }
 
 
