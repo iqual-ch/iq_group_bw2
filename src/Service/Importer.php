@@ -27,7 +27,20 @@ class Importer {
     $countryCodes = $this->bw2ApiService->getCountryInformation();
     $current_item_version = $this->config->get('current_item_version');
     $data = $this->bw2ApiService->getContacts($current_item_version);
-    $operations[] = ['_iq_group_bw2_import_users', [$data, $langCodes, $countryCodes]];
+    $total_users = count($data['DataList']);
+    $operations = [];
+    
+    $resumeId = '-2144237137';
+    $resume_key = array_search($resumeId, array_column($data['DataList'], 'Account_ID'));
+    \Drupal::logger('iq_group_bw2')->notice('resume at '. $resume_key);
+    $remainingUsers = array_slice($data['DataList'], $resume_key);
+    $total_users = count($remainingUsers);
+
+    if ($total_users > 0) {
+      foreach (array_chunk($remainingUsers, 100) as $batchId => $users) {
+        $operations[] = ['_iq_group_bw2_import_users', [$users, $data['max_item_version'], $total_users, $langCodes, $countryCodes]];
+      }
+    }
     return $operations;
   }
 
