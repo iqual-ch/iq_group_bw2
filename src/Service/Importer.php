@@ -30,16 +30,10 @@ class Importer {
     $users = $data['DataList'];
     $total_users = count($users);
     $operations = [];
-    
-/*     $resumeId = '-2144237137';
-    $resume_key = array_search($resumeId, array_column($data['DataList'], 'Account_ID'));
-    \Drupal::logger('iq_group_bw2')->notice('resume at '. $resume_key);
-    $users = array_slice($data['DataList'], $resume_key);
-    $total_users = count($remainingUsers); */
 
     if ($total_users > 0) {
       foreach (array_chunk($users, 100) as $batchId => $batch_users) {
-        $operations[] = ['_iq_group_bw2_import_users', [$batch_users, $data['max_item_version'], $total_users, $langCodes, $countryCodes]];
+        $operations[] = ['_iq_group_bw2_import_users', [$batch_users, $data['MaxItemVersion'], $total_users, $langCodes, $countryCodes]];
       }
     }
     return $operations;

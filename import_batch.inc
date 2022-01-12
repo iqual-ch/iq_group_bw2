@@ -15,31 +15,28 @@ function _iq_group_bw2_import_users($users, $max_item_version, $total_users, $la
     \Drupal::logger('iq_group_bw2_import')->notice('nothing to import');
     return;
   }
+
   if (!isset($context['sandbox']['progress'])) {
     $context['sandbox']['progress'] = 0;
     $context['sandbox']['current_index'] = 0;
+    $context['sandbox']['current_max'] = max(100, count($users));
     $context['sandbox']['max'] = $total_users - 1;
     $context['sandbox']['start'] = microtime(TRUE);
 
   }
   if (!isset($context['results']['users']) || empty($context['results']['users'])) {
     $context['results']['users'] = $users;
+    $context['results']['progress'] = 0;
     $context['results']['imported']['users'] = 0;
     $context['results']['updated']['users'] = 0;
     $context['results']['error']['users'] = 0;
     $context['results']['max_item_version'] = $max_item_version;
   }
+  
   $indexes = range($context['sandbox']['progress'], min($context['sandbox']['progress'] + 99, $context['sandbox']['max']));
   foreach ($indexes as $i) {
     $context['sandbox']['progress']++;
     $context['sandbox']['current_index'] = $i;
-
-    $processed_abs = $i + 1;
-    $processed_rel = $processed_abs / ($context['sandbox']['max'] + 1) * 100;
-
-    $time_elapsed = (microtime(TRUE) - $context['sandbox']['start']);
-    $time_estimated = $time_elapsed / $processed_abs * ($context['sandbox']['max'] + 1);
-
     if ($users[$i] == NULL) {
       continue;
     }
@@ -50,16 +47,13 @@ function _iq_group_bw2_import_users($users, $max_item_version, $total_users, $la
     else{
       $context['results']['error']['users']++;
     }
-    
   }
+  
   gc_collect_cycles();
 
-  $context['message'] = 'Processed ' . $processed_abs . ' of ' . ($context['sandbox']['max'] + 1) . ' records (' . round($processed_rel) . ' %). Elapsed time: ' . round($time_elapsed, 2) . ' estimated time: ' . round($time_estimated, 2) . ' s';
-
-  if ($context['sandbox']['progress'] != $context['sandbox']['max']) {
-    $context['finished'] = $context['sandbox']['progress'] / $context['sandbox']['max'];
-  }
-
+  $context['results']['progress'] += $context['sandbox']['current_max'];
+  $processed_rel = $context['results']['progress'] / ($context['sandbox']['max'] + 1) * 100;
+  $context['message'] = 'Processed ' .  $context['results']['progress'] . ' of ' . ($context['sandbox']['max'] + 1) . ' records (' . round($processed_rel) . ' %).';
 }
 
 
@@ -132,10 +126,8 @@ function processUser($user_data, $langCodes, $countryCodes, &$context){
     else{
       $user->set('field_iq_group_preferences', [1]);
     }
-    
-    $user->save();
 
-    \Drupal::logger('iq_group_bw2')->notice('user ' . $bw2_id . ' imported');
+    $user->save();
 
     // If new user we add him to the general group
     if (!$result){
@@ -147,7 +139,6 @@ function processUser($user_data, $langCodes, $countryCodes, &$context){
     if ($user_data['Visitor_AllowEmail']){
       $group_newsletter = \Drupal\group\Entity\Group::load(2);
       \Drupal\iq_group\Controller\UserController::addGroupRoleToUser($group_newsletter, $user, 'subscription-subscriber');
-      \Drupal::logger('iq_group_bw2')->notice('user added to the newsletter group');
     }
     return $user;
 }
