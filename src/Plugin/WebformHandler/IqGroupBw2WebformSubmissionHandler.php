@@ -81,17 +81,22 @@ class IqGroupBw2WebformSubmissionHandler extends \Drupal\webform\Plugin\WebformH
     $user_data['field_iq_group_preferences'] = ($form_state->getValue('customer_newsletter')) ? [1,2] : [1];
 
     // Set the country code to Switzerland as it is required.
-    if (!empty($user_data['field_iq_user_base_address']['country_code'])){
+    if (empty($user_data['field_iq_user_base_address']['country_code'])){
        $user_data['field_iq_user_base_address']['country_code'] = 'CH';
     }
 
     // If user exists, attribute the submission to the user.
     if (!empty($user) && $userExists) {
         $webform_submission->setOwnerId($user->id())->save();
+        if (!empty($form_state->getValue('customer_newsletter'))) {
+          $group_newsletter = \Drupal\group\Entity\Group::load(2);
+          \Drupal\iq_group\Controller\UserController::addGroupRoleToUser($group_newsletter, $user, 'subscription-subscriber');
+          \Drupal::logger('iq_group_bw2')->notice('user added to the newsletter group');
+        }
     }
-    // If the user does not exists,
-    // Create the user, register him to the iq group and attribute the submission to the user.
-    else  {
+    // If the user does not exists and he wants to register to the newsletter,
+    // Create the user, register him to the iq groups and attribute the submission to the user.
+    else if (!empty($form_state->getValue('customer_newsletter'))) {
       $user = UserController::createMember($user_data);
       $store = \Drupal::service('tempstore.shared')->get('iq_group.user_status');
       $store->set($user->id().'_pending_activation', true);
@@ -99,6 +104,12 @@ class IqGroupBw2WebformSubmissionHandler extends \Drupal\webform\Plugin\WebformH
       $group_general = \Drupal\group\Entity\Group::load(1);
       \Drupal\iq_group\Controller\UserController::addGroupRoleToUser($group_general, $user, 'subscription-subscriber');
       \Drupal::logger('iq_group_bw2')->notice('user added to the general group');
+
+      if (!empty($form_state->getValue('customer_newsletter'))) {
+        $group_newsletter = \Drupal\group\Entity\Group::load(2);
+        \Drupal\iq_group\Controller\UserController::addGroupRoleToUser($group_newsletter, $user, 'subscription-subscriber');
+        \Drupal::logger('iq_group_bw2')->notice('user added to the newsletter group');
+      }
     }
 
   }
