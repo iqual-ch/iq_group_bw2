@@ -87,7 +87,7 @@ class IqGroupBw2WebformSubmissionHandler extends \Drupal\webform\Plugin\WebformH
 
     // If user exists, attribute the submission to the user.
     if (!empty($user) && $userExists) {
-        $webform_submission->setOwnerId($user->id())->save();
+        $webform_submission->setOwnerId($user->id());
         if (!empty($form_state->getValue('customer_newsletter'))) {
           $group_newsletter = \Drupal\group\Entity\Group::load(2);
           \Drupal\iq_group\Controller\UserController::addGroupRoleToUser($group_newsletter, $user, 'subscription-subscriber');
@@ -106,7 +106,7 @@ class IqGroupBw2WebformSubmissionHandler extends \Drupal\webform\Plugin\WebformH
       $user = UserController::createMember($user_data, [], $destination . '&source_form=' . rawurlencode($webform_submission->getWebform()->id()));
       $store = \Drupal::service('tempstore.shared')->get('iq_group.user_status');
       $store->set($user->id().'_pending_activation', true);
-      $webform_submission->setOwnerId($user->id())->save();
+      $webform_submission->setOwnerId($user->id());
       $group_general = \Drupal\group\Entity\Group::load(1);
       \Drupal\iq_group\Controller\UserController::addGroupRoleToUser($group_general, $user, 'subscription-subscriber');
       \Drupal::logger('iq_group_bw2')->notice('user added to the general group');
