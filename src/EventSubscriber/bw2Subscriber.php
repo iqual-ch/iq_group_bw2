@@ -7,7 +7,6 @@ use Drupal\iq_group\IqGroupEvents;
 use Drupal\bw2_api\bw2ApiServiceInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
-
 /**
  * Event subscriber to handle bw2 events dispatched by iq_group module.
  */
@@ -32,10 +31,9 @@ class bw2Subscriber implements EventSubscriberInterface {
    */
   public static function getSubscribedEvents() {
     return [
-      IqGroupEvents::USER_PROFILE_UPDATE => [['updatebw2Contact', 300]]
+      IqGroupEvents::USER_PROFILE_UPDATE => [['updatebw2Contact', 300]],
     ];
   }
-
 
   /**
    * Update a bw2 contact.
@@ -46,28 +44,28 @@ class bw2Subscriber implements EventSubscriberInterface {
   public function updatebw2Contact(IqGroupEvent $event) {
     if ($event && $event->getUser()->id()) {
       $uri = \Drupal::request()->getRequestUri();
-      // If user is anonymous and the referer does not come from opt-in 
-      // then it means the update came from the import task -> we do nothing
-      if(\Drupal::currentUser()->isAnonymous() && strpos($uri, 'de/auth') === false){
+      // If user is anonymous and the referer does not come from opt-in
+      // then it means the update came from the import task -> we do nothing.
+      if (\Drupal::currentUser()->isAnonymous() && strpos($uri, 'de/auth') === FALSE) {
         \Drupal::logger('iq_group_bw2')->notice('bw2 update event triggered by anonymous user - do nothing.');
       }
-      else{
+      else {
         /** @var \Drupal\user\UserInterface $user */
         $user = $event->getUser();
-        if ($user->hasField('field_iq_group_bw2_id')){
+        if ($user->hasField('field_iq_group_bw2_id')) {
           /**
            * 3 cases:
            * - newly created user, not active yet
            * - newly created user, active
            * - existing user (with bw2_id)
            */
-          if (!empty($user->get('field_iq_group_bw2_id')->getValue())){
+          if (!empty($user->get('field_iq_group_bw2_id')->getValue())) {
             $profile_data = $this->convertDataForBw2($user);
             $bw2_id = $user->get('field_iq_group_bw2_id')->getValue();
             $bw2_id = reset($bw2_id)['value'];
             $this->bw2ApiService->editContact($bw2_id, $profile_data);
           }
-          if (empty($user->get('field_iq_group_bw2_id')->getValue()) && $user->isActive()){
+          if (empty($user->get('field_iq_group_bw2_id')->getValue()) && $user->isActive()) {
             $profile_data = $this->convertDataForBw2($user);
             $bw2_id = $this->bw2ApiService->createContact($profile_data);
             $user->set('field_iq_group_bw2_id', $bw2_id);
@@ -77,14 +75,14 @@ class bw2Subscriber implements EventSubscriberInterface {
     }
   }
 
-
   /**
    * Helper function to convert the user data to the bw2 format.
-   *  @var \Drupal\user\UserInterface $user
+   *
+   * @var \Drupal\user\UserInterface $user
    */
-  public function convertDataForBw2($user){
+  public function convertDataForBw2($user) {
     $langCode = $this->bw2ApiService->getLanguageCode($user->getPreferredLangcode());
-    $newsletter = ($user->hasField('field_iq_group_preferences') && !$user->get('field_iq_group_preferences')->isEmpty()) ? true : false;
+    $newsletter = ($user->hasField('field_iq_group_preferences') && !$user->get('field_iq_group_preferences')->isEmpty()) ? TRUE : FALSE;
     $address = $user->get('field_iq_user_base_address')->getValue();
     $address = reset($address);
     $countryCode = $this->bw2ApiService->getCountryCode($address['country_code']);
@@ -108,7 +106,7 @@ class bw2Subscriber implements EventSubscriberInterface {
       'Account_Email1' => $user->getEmail(),
       'Account_Language_Dimension_ID' => $langCode,
       'Visitor_AllowEmail' => $newsletter,
-      'Account_Birthday' => $birthdate['value']
+      'Account_Birthday' => $birthdate['value'],
     ];
 
     return $profile_data;

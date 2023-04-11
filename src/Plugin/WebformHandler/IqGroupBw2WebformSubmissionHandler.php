@@ -2,9 +2,10 @@
 
 namespace Drupal\iq_group_bw2\Plugin\WebformHandler;
 
+use Drupal\webform\Plugin\WebformHandlerBase;
+use Drupal\group\Entity\Group;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\iq_group\Controller\UserController;
-use Drupal\user\Entity\User;
 use Drupal\webform\WebformSubmissionInterface;
 
 /**
@@ -20,7 +21,7 @@ use Drupal\webform\WebformSubmissionInterface;
  * )
  * @package Drupal\iq_group_bw2\Plugin\WebformHandler
  */
-class IqGroupBw2WebformSubmissionHandler extends \Drupal\webform\Plugin\WebformHandlerBase {
+class IqGroupBw2WebformSubmissionHandler extends WebformHandlerBase {
 
   /**
    * {@inheritDoc}
@@ -35,14 +36,15 @@ class IqGroupBw2WebformSubmissionHandler extends \Drupal\webform\Plugin\WebformH
     if ($form_state->getValue('customer_mail')) {
       $user = \Drupal::entityTypeManager()->getStorage('user')->loadByProperties(
         [
-          'mail' => $form_state->getValue('customer_mail')
+          'mail' => $form_state->getValue('customer_mail'),
         ]
       );
-      if (count($user) == 0){
+      if (count($user) == 0) {
         $userExists = FALSE;
         $user_data['name'] = $form_state->getValue('customer_mail');
         $user_data['mail'] = $user_data['name'];
-        $currentLanguage = \Drupal::languageManager()->getCurrentLanguage()->getId();;
+        $currentLanguage = \Drupal::languageManager()->getCurrentLanguage()->getId();
+        ;
         $user_data['preferred_langcode'] = $currentLanguage;
         $user_data['langcode'] = $currentLanguage;
       }
@@ -60,43 +62,43 @@ class IqGroupBw2WebformSubmissionHandler extends \Drupal\webform\Plugin\WebformH
       $user_data['field_iq_user_base_address']['family_name'] = $form_state->getValue('customer_last_name');
     }
     if ($form_state->getValue('customer_address')) {
-      $user_data['field_iq_user_base_address']['address_line1'] =  $form_state->getValue('customer_address');
+      $user_data['field_iq_user_base_address']['address_line1'] = $form_state->getValue('customer_address');
     }
     if ($form_state->getValue('customer_address_2')) {
-      $user_data['field_iq_user_base_address']['address_line2'] =  $form_state->getValue('customer_address_2');
+      $user_data['field_iq_user_base_address']['address_line2'] = $form_state->getValue('customer_address_2');
     }
     if ($form_state->getValue('customer_city')) {
-      $user_data['field_iq_user_base_address']['locality'] =  $form_state->getValue('customer_city');
+      $user_data['field_iq_user_base_address']['locality'] = $form_state->getValue('customer_city');
     }
     if ($form_state->getValue('customer_postal_code')) {
-      $user_data['field_iq_user_base_address']['postal_code'] =  $form_state->getValue('customer_postal_code');
+      $user_data['field_iq_user_base_address']['postal_code'] = $form_state->getValue('customer_postal_code');
     }
     if ($form_state->getValue('customer_country')) {
-      $user_data['field_iq_user_base_address']['country_code'] =  $form_state->getValue('customer_country');
+      $user_data['field_iq_user_base_address']['country_code'] = $form_state->getValue('customer_country');
     }
     if ($form_state->getValue('customer_birth_date')) {
       $user_data['field_gcb_custom_birth_date'] = $form_state->getValue('customer_birth_date');
     }
 
-    $user_data['field_iq_group_preferences'] = ($form_state->getValue('customer_newsletter')) ? [1,2] : [1];
+    $user_data['field_iq_group_preferences'] = ($form_state->getValue('customer_newsletter')) ? [1, 2] : [1];
 
     // Set the country code to Switzerland as it is required.
-    if (empty($user_data['field_iq_user_base_address']['country_code'])){
-       $user_data['field_iq_user_base_address']['country_code'] = 'CH';
+    if (empty($user_data['field_iq_user_base_address']['country_code'])) {
+      $user_data['field_iq_user_base_address']['country_code'] = 'CH';
     }
 
     // If user exists, attribute the submission to the user.
     if (!empty($user) && $userExists) {
-        $webform_submission->setOwnerId($user->id());
-        if (!empty($form_state->getValue('customer_newsletter'))) {
-          $group_newsletter = \Drupal\group\Entity\Group::load(2);
-          \Drupal\iq_group\Controller\UserController::addGroupRoleToUser($group_newsletter, $user, 'subscription-subscriber');
-          \Drupal::logger('iq_group_bw2')->notice('user added to the newsletter group');
-        }
+      $webform_submission->setOwnerId($user->id());
+      if (!empty($form_state->getValue('customer_newsletter'))) {
+        $group_newsletter = Group::load(2);
+        UserController::addGroupRoleToUser($group_newsletter, $user, 'subscription-subscriber');
+        \Drupal::logger('iq_group_bw2')->notice('user added to the newsletter group');
+      }
     }
     // If the user does not exists and he wants to register to the newsletter,
     // Create the user, register him to the iq groups and attribute the submission to the user.
-    else if (!empty($form_state->getValue('customer_newsletter'))) {
+    elseif (!empty($form_state->getValue('customer_newsletter'))) {
       if (!empty(\Drupal::config('iq_group.settings')->get('default_redirection'))) {
         $destination = \Drupal::config('iq_group.settings')->get('default_redirection');
       }
@@ -105,18 +107,19 @@ class IqGroupBw2WebformSubmissionHandler extends \Drupal\webform\Plugin\WebformH
       }
       $user = UserController::createMember($user_data, [], $destination . '&source_form=' . rawurlencode($webform_submission->getWebform()->id()));
       $store = \Drupal::service('tempstore.shared')->get('iq_group.user_status');
-      $store->set($user->id().'_pending_activation', true);
+      $store->set($user->id() . '_pending_activation', TRUE);
       $webform_submission->setOwnerId($user->id());
-      $group_general = \Drupal\group\Entity\Group::load(1);
-      \Drupal\iq_group\Controller\UserController::addGroupRoleToUser($group_general, $user, 'subscription-subscriber');
+      $group_general = Group::load(1);
+      UserController::addGroupRoleToUser($group_general, $user, 'subscription-subscriber');
       \Drupal::logger('iq_group_bw2')->notice('user added to the general group');
 
       if (!empty($form_state->getValue('customer_newsletter'))) {
-        $group_newsletter = \Drupal\group\Entity\Group::load(2);
-        \Drupal\iq_group\Controller\UserController::addGroupRoleToUser($group_newsletter, $user, 'subscription-subscriber');
+        $group_newsletter = Group::load(2);
+        UserController::addGroupRoleToUser($group_newsletter, $user, 'subscription-subscriber');
         \Drupal::logger('iq_group_bw2')->notice('user added to the newsletter group');
       }
     }
 
   }
+
 }
