@@ -59,7 +59,9 @@ class bw2Subscriber implements EventSubscriberInterface {
            * - newly created user, active
            * - existing user (with bw2_id)
            */
-          if (!empty($user->get('field_iq_group_bw2_id')->getValue())) {
+          if (
+            !empty($user->get('field_iq_group_bw2_id')->getValue())
+            ) {
             $profile_data = $this->convertDataForBw2($user);
             $bw2_id = $user->get('field_iq_group_bw2_id')->getValue();
             $bw2_id = reset($bw2_id)['value'];
@@ -68,7 +70,9 @@ class bw2Subscriber implements EventSubscriberInterface {
           if (empty($user->get('field_iq_group_bw2_id')->getValue()) && $user->isActive()) {
             $profile_data = $this->convertDataForBw2($user);
             $bw2_id = $this->bw2ApiService->createContact($profile_data);
-            $user->set('field_iq_group_bw2_id', $bw2_id);
+            if ($bw2_id != "0") {
+              $user->set('field_iq_group_bw2_id', $bw2_id);
+            }
           }
         }
       }
@@ -85,29 +89,38 @@ class bw2Subscriber implements EventSubscriberInterface {
     $newsletter = ($user->hasField('field_iq_group_preferences') && !$user->get('field_iq_group_preferences')->isEmpty()) ? TRUE : FALSE;
     $address = $user->get('field_iq_user_base_address')->getValue();
     $address = reset($address);
-    $countryCode = $this->bw2ApiService->getCountryCode($address['country_code']);
-    $salutation = $user->get('field_iq_user_base_salutation')->getValue();
-    $salutation = reset($salutation);
-    $pobox = $user->get('field_iq_user_base_adress_pobox')->getValue();
-    $pobox = reset($pobox);
-    $birthdate = $user->get('field_gcb_custom_birth_date')->getValue();
-    $birthdate = reset($birthdate);
+    $countryCode = ($address && isset($address['country_code'])) ? $this->bw2ApiService->getCountryCode($address['country_code']) : "";
+    $salutation = $user->get('field_iq_group_salutation')->value;
+
+    /*
+     * @todo Add to GCB
+     *
+     * $salutation = $user->get('field_iq_user_base_salutation')->value;
+     * $pobox = $user->get('field_iq_user_base_adress_pobox')->value;
+     * $birthdate = $user->get('field_gcb_custom_birth_date')->value;
+     * $profile_data['Account_Salutation'] = $salutation;
+     * $profile_data['Account_PostalCode'] = $pobox;
+     * $profile_data['Account_Birthday'] = $birthdate;
+    */
     $profile_data = [
       'Account_Active' => $user->status->value,
-      'Account_Salutation' => $salutation['value'],
+      'Account_Salutation' => $salutation,
       'Account_FirstName' => $address['given_name'],
       'Account_LastName' => $address['family_name'],
       'Account_AddressLine1' => $address['address_line1'],
       'Account_Street' => $address['address_line2'],
-      'Account_POBox' => $pobox['value'],
+      'Account_POBox' => '',
       'Account_PostalCode' => $address['postal_code'],
       'Account_City' => $address['locality'],
       'Account_Country_Dimension_ID' => $countryCode,
       'Account_Email1' => $user->getEmail(),
       'Account_Language_Dimension_ID' => $langCode,
       'Visitor_AllowEmail' => $newsletter,
-      'Account_Birthday' => $birthdate['value'],
+      'Account_Birthday' => '',
     ];
+
+    // Allow other modules to alter the $items array.
+    \Drupal::moduleHandler()->alter('profile_data', $profile_data);
 
     return $profile_data;
   }
