@@ -3,12 +3,14 @@
 namespace Drupal\iq_group_bw2\Plugin\WebformHandler;
 
 use Drupal\webform\Plugin\WebformHandlerBase;
-use Drupal\group\Entity\Group;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\webform\WebformSubmissionInterface;
 
 /**
  * IQ Group BW2 Webform submission handler.
+ *
+ * If added to a webform and active
+ * this will register the user in bw2.
  *
  * @WebformHandler(
  *     id = "iq_group_bw2_submission_handler",
@@ -53,7 +55,7 @@ class IqGroupBw2WebformSubmissionHandler extends WebformHandlerBase {
       }
     }
     if ($form_state->getValue('customer_salutation')) {
-      $user_data['field_iq_user_base_salutation'] = $form_state->getValue('customer_salutation');
+      $user_data['field_iq_group_salutation'] = $form_state->getValue('customer_salutation');
     }
     if ($form_state->getValue('customer_first_name')) {
       $user_data['field_iq_user_base_address']['given_name'] = $form_state->getValue('customer_first_name');
@@ -76,13 +78,6 @@ class IqGroupBw2WebformSubmissionHandler extends WebformHandlerBase {
     if ($form_state->getValue('customer_country')) {
       $user_data['field_iq_user_base_address']['country_code'] = $form_state->getValue('customer_country');
     }
-    if ($form_state->getValue('customer_birth_date')) {
-      $user_data['field_gcb_custom_birth_date'] = $form_state->getValue('customer_birth_date');
-    }
-
-    $user_data['field_iq_group_preferences'] =
-      ($form_state->getValue('customer_newsletter')) ?
-        [1, 2] : [1];
 
     // Set the country code to Switzerland as it is required.
     if (empty($user_data['field_iq_user_base_address']['country_code'])) {
@@ -92,38 +87,47 @@ class IqGroupBw2WebformSubmissionHandler extends WebformHandlerBase {
     // If user exists, attribute the submission to the user.
     if (!empty($user) && $userExists) {
       $webform_submission->setOwnerId($user->id());
-      if (!empty($form_state->getValue('customer_newsletter'))) {
-        $group_newsletter = Group::load(2);
-        $user_manager->addGroupRoleToUser($group_newsletter, $user, 'subscription-subscriber');
-        $this->getLogger('iq_group_bw2')->notice('user added to the newsletter group');
-      }
     }
+
     /*
-     * If the user does not exists and wants to register to the newsletter,
+     * If the user does not exists,
      * Create the user, register the user to the iq groups
      * and attribute the submission to the user.
      */
-    elseif (!empty($form_state->getValue('customer_newsletter'))) {
-      if (!empty(\Drupal::config('iq_group.settings')->get('default_redirection'))) {
-        $destination = \Drupal::config('iq_group.settings')->get('default_redirection');
-      }
-      else {
-        $destination = '/member-area';
-      }
-      $user = $user_manager->createMember($user_data, [], $destination . '&source_form=' . rawurlencode($webform_submission->getWebform()->id()));
-      $store = \Drupal::service('tempstore.shared')->get('iq_group.user_status');
-      $store->set($user->id() . '_pending_activation', TRUE);
-      $webform_submission->setOwnerId($user->id());
-      $group_general = Group::load(1);
-      $user_manager->addGroupRoleToUser($group_general, $user, 'subscription-subscriber');
-      $this->getLogger('iq_group_bw2')->notice('user added to the general group');
-
-      if (!empty($form_state->getValue('customer_newsletter'))) {
-        $group_newsletter = Group::load(2);
-        $user_manager->addGroupRoleToUser($group_newsletter, $user, 'subscription-subscriber');
-        $this->getLogger('iq_group_bw2')->notice('user added to the newsletter group');
-      }
+    if (!empty(\Drupal::config('iq_group.settings')->get('default_redirection'))) {
+      $destination = \Drupal::config('iq_group.settings')->get('default_redirection');
     }
+    else {
+      $destination = '';
+    }
+
+    // Allow other module to modify the user object before save.
+    \Drupal::moduleHandler()
+      ->invokeAll('iq_group_bw2_before_submission',
+        [
+          &$user_data,
+          $user,
+          $form_state,
+        ]
+      );
+
+    $user = $user_manager->createMember($user_data, [], $destination . '&source_form=' . rawurlencode($webform_submission->getWebform()->id()));
+    $store = \Drupal::service('tempstore.shared')->get('iq_group.user_status');
+    $store->set($user->id() . '_pending_activation', TRUE);
+    $webform_submission->setOwnerId($user->id());
+    $group_general = $user_manager->getGeneralGroup();
+    $user_manager->addGroupRoleToUser($group_general, $user, 'subscription-subscriber');
+    $this->getLogger('iq_group_bw2')->notice('user added to the general group');
+
+    // Allow other module to perform other operation after submission.
+    \Drupal::moduleHandler()
+      ->invokeAll('iq_group_bw2_after_submission',
+        [
+          &$user_data,
+          $user,
+          $form_state,
+        ]
+      );
 
   }
 

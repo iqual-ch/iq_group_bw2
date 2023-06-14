@@ -31,7 +31,14 @@ function hook_iq_group_bw2_profile_data_alter(array &$profile_data) {
  *   The user data to be altered before the import.
  */
 function hook_iq_group_bw2_before_import(array &$data) {
-  // Here others will make a module that will call this to alter "$data".
+  /*
+   * "$data" contains [
+   *    &$user_data,
+   *    $user,
+   *    $userCountryCode,
+   *    $userLanguageCode,
+   *  ]
+   */
 }
 
 /**
@@ -41,7 +48,46 @@ function hook_iq_group_bw2_before_import(array &$data) {
  *   The user data to be altered after the import.
  */
 function hook_iq_group_bw2_after_import(array &$data) {
-  // Here others will make a module that will call this to alter "$data".
+  /*
+   * "$data" contains [
+   *    &$user_data,
+   *    $user,
+   *    $userCountryCode,
+   *    $userLanguageCode,
+   *  ]
+   */
+}
+
+/**
+ * Alter the data before webform submission.
+ *
+ * @param array $data
+ *   The user data to be altered before submission.
+ */
+function hook_iq_group_bw2_before_submission(array &$data) {
+  /*
+   * "$data" contains [
+   *    &$user_data,
+   *    $user,
+   *    $form_state,
+   *  ]
+   */
+}
+
+/**
+ * Perform other operations after webform submission.
+ *
+ * @param array $data
+ *   The user data to be altered after the import.
+ */
+function hook_iq_group_bw2_after_submission(array &$data) {
+  /*
+   * "$data" contains [
+   *    &$user_data,
+   *    $user,
+   *    $form_state,
+   *  ]
+   */
 }
 
 /**

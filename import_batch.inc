@@ -6,7 +6,6 @@
  */
 
 use Drupal\user\Entity\User;
-use Drupal\group\Entity\Group;
 
 /**
  * Process the users data from bw2 and import it to Drupal.
@@ -156,28 +155,6 @@ function process_user(
     $user->activate();
   }
 
-  /*
-   * Move this to gcb module
-   * $user->set(
-   *  'field_iq_user_base_salutation',
-   *   $user_data['Account_Salutation']
-   * );
-   * $user->set(
-   *   'field_iq_user_base_adress_pobox',
-   *   $user_data['Account_POBox']
-   * );
-   * if ($user_data['Account_Birthday']) {
-   *   $date = substr($user_data['Account_Birthday'], 0, 10);
-   *   $user->set('field_gcb_custom_birth_date', $date);
-   * }
-   * if ($user_data['Visitor_AllowEmail']) {
-   *   $user->set('field_iq_group_preferences', [1, 2]);
-   * }
-   * else {
-   *   $user->set('field_iq_group_preferences', [1]);
-   * }
-   */
-
   // Allow other module to modify the user object before save.
   \Drupal::moduleHandler()
     ->invokeAll('iq_group_bw2_before_import',
@@ -197,11 +174,6 @@ function process_user(
     \Drupal::service('iq_group.user_manager')->addGroupRoleToUser($group_general, $user, 'subscription-subscriber');
   }
 
-  // @todo Move this to gcb hook
-  if ($user_data['Visitor_AllowEmail']) {
-    $group_newsletter = Group::load(2);
-    \Drupal::service('iq_group.user_manager')->addGroupRoleToUser($group_newsletter, $user, 'subscription-subscriber');
-  }
   // Allow other module to perform other operation after save.
   \Drupal::moduleHandler()
     ->invokeAll('iq_group_bw2_after_import',
