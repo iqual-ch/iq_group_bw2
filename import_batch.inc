@@ -2,16 +2,36 @@
 
 /**
  * @file
+ * Process the batch command to import users from bw2.
  */
 
 use Drupal\user\Entity\User;
 use Drupal\group\Entity\Group;
-use Drupal\iq_group\Controller\UserController;
 
 /**
+ * Process the users data from bw2 and import it to Drupal.
  *
+ * @param array $users
+ *   An array of user data.
+ * @param string $max_item_version
+ *   The latest version of the bw2 application.
+ * @param int $total_users
+ *   The total amount of users to process.
+ * @param array $langCodes
+ *   An array of predefined langcode values from Bw2.
+ * @param array $countryCodes
+ *   An array of predefined countrycode values from Bw2.
+ * @param \DrushBatchContext $context
+ *   The current batch context.
  */
-function _iq_group_bw2_import_users($users, $max_item_version, $total_users, $langCodes, $countryCodes, &$context) {
+function _iq_group_bw2_import_users(
+  array $users,
+  $max_item_version,
+  int $total_users,
+  array $langCodes,
+  array $countryCodes,
+  DrushBatchContext &$context
+) {
   if ((is_countable($users) ? count($users) : 0) < 1) {
     \Drupal::logger('iq_group_bw2_import')->notice('nothing to import');
     return;
@@ -42,7 +62,7 @@ function _iq_group_bw2_import_users($users, $max_item_version, $total_users, $la
       continue;
     }
     if (!empty($users[$i]['Account_Email1'])) {
-      $user = processUser($users[$i], $langCodes, $countryCodes, $context);
+      $user = process_user($users[$i], $langCodes, $countryCodes, $context);
       \Drupal::entityTypeManager()->getStorage('user')->resetCache([$user->id()]);
     }
     else {
@@ -58,9 +78,26 @@ function _iq_group_bw2_import_users($users, $max_item_version, $total_users, $la
 }
 
 /**
+ * Process a single user.
  *
+ * @param array $user_data
+ *   The data to import.
+ * @param array $langCodes
+ *   An array of predefined langcode values from Bw2.
+ * @param array $countryCodes
+ *   An array of predefined countrycode values from Bw2.
+ * @param \DrushBatchContext $context
+ *   The current batch context.
+ *
+ * @return \Drupal\user\UserInterface
+ *   The new / edited Drupal user.
  */
-function processUser($user_data, $langCodes, $countryCodes, &$context) {
+function process_user(
+  array $user_data,
+  array $langCodes,
+  array $countryCodes,
+  DrushBatchContext &$context
+) {
   // Create if new user, update if existing.
   $bw2_id = $user_data['Account_ID'];
   $database = \Drupal::database();
@@ -79,7 +116,10 @@ function processUser($user_data, $langCodes, $countryCodes, &$context) {
     $user = User::create();
     $user->setPassword('test');
     $user->enforceIsNew();
-    // There could be multiple accounts with the same E-Mail from BW2, so we have to create unique name for drupal.
+    /*
+     * There could be multiple accounts with the same E-Mail from BW2,
+     * so we have to create unique name for drupal.
+     */
     $exists = user_load_by_name($user_data['Account_Email1']);
     if ($exists) {
       $i = 1;
@@ -97,9 +137,9 @@ function processUser($user_data, $langCodes, $countryCodes, &$context) {
     $context['results']['imported']['users']++;
   }
   $user->setEmail($user_data['Account_Email1']);
-  $user->set('field_iq_user_base_salutation', $user_data['Account_Salutation']);
-  $userCountryCode = getCountryCode($user_data['Account_Country_Dimension_ID'], $countryCodes);
-  $userLanguageCode = getLanguageCode($user_data['Account_Language_Dimension_ID'], $langCodes);
+  $user->set('field_iq_group_salutation', $user_data['Account_Salutation']);
+  $userCountryCode = get_country_code($user_data['Account_Country_Dimension_ID'], $countryCodes);
+  $userLanguageCode = get_language_code($user_data['Account_Language_Dimension_ID'], $langCodes);
   $address = [
     'langcode' => $userLanguageCode,
     'family_name' => $user_data['Account_LastName'],
@@ -111,42 +151,84 @@ function processUser($user_data, $langCodes, $countryCodes, &$context) {
     'country_code' => $userCountryCode,
   ];
   $user->set('field_iq_user_base_address', $address);
-  $user->set('field_iq_user_base_adress_pobox', $user_data['Account_POBox']);
+
   if ($user_data['Account_Active']) {
     $user->activate();
   }
 
-  if ($user_data['Account_Birthday']) {
-    $date = substr($user_data['Account_Birthday'], 0, 10);
-    $user->set('field_gcb_custom_birth_date', $date);
-  }
-  if ($user_data['Visitor_AllowEmail']) {
-    $user->set('field_iq_group_preferences', [1, 2]);
-  }
-  else {
-    $user->set('field_iq_group_preferences', [1]);
-  }
+  /*
+   * Move this to gcb module
+   * $user->set(
+   *  'field_iq_user_base_salutation',
+   *   $user_data['Account_Salutation']
+   * );
+   * $user->set(
+   *   'field_iq_user_base_adress_pobox',
+   *   $user_data['Account_POBox']
+   * );
+   * if ($user_data['Account_Birthday']) {
+   *   $date = substr($user_data['Account_Birthday'], 0, 10);
+   *   $user->set('field_gcb_custom_birth_date', $date);
+   * }
+   * if ($user_data['Visitor_AllowEmail']) {
+   *   $user->set('field_iq_group_preferences', [1, 2]);
+   * }
+   * else {
+   *   $user->set('field_iq_group_preferences', [1]);
+   * }
+   */
+
+  // Allow other module to modify the user object before save.
+  \Drupal::moduleHandler()
+    ->invokeAll('iq_group_bw2_before_import',
+      [
+        &$user_data,
+        $user,
+        $userCountryCode,
+        $userLanguageCode,
+      ]
+    );
 
   $user->save();
 
-  // If new user we add him to the general group.
+  // If new user we add the user to the general group.
   if (!$result) {
-    $group_general = Group::load(1);
-    UserController::addGroupRoleToUser($group_general, $user, 'subscription-subscriber');
+    $group_general = \Drupal::service('iq_group.user_manager')->getGeneralGroup();
+    \Drupal::service('iq_group.user_manager')->addGroupRoleToUser($group_general, $user, 'subscription-subscriber');
   }
 
+  // @todo Move this to gcb hook
   if ($user_data['Visitor_AllowEmail']) {
     $group_newsletter = Group::load(2);
-    UserController::addGroupRoleToUser($group_newsletter, $user, 'subscription-subscriber');
+    \Drupal::service('iq_group.user_manager')->addGroupRoleToUser($group_newsletter, $user, 'subscription-subscriber');
   }
+  // Allow other module to perform other operation after save.
+  \Drupal::moduleHandler()
+    ->invokeAll('iq_group_bw2_after_import',
+      [
+        &$user_data,
+        $user,
+        $userCountryCode,
+        $userLanguageCode,
+      ]
+    );
+
   return $user;
 }
 
 /**
+ * Get matching langcode from bw2.
  *
+ * @param string $bw2_code
+ *   The bw2 langcode.
+ * @param array $lang_codes
+ *   An array of all bw2 langcodes.
+ *
+ * @return string|null
+ *   The matching code or null.
  */
-function getLanguageCode($bw2_code, $lang_codes) {
-  foreach ($lang_codes['DataList'] as $key => $code) {
+function get_language_code($bw2_code, array $lang_codes) {
+  foreach ($lang_codes['DataList'] as $code) {
     if ($code['Dimension_ID'] === $bw2_code) {
       return $code['Dimension_Code'];
     }
@@ -155,10 +237,18 @@ function getLanguageCode($bw2_code, $lang_codes) {
 }
 
 /**
+ * Get matching countrycode from bw2.
  *
+ * @param string $bw2_code
+ *   The bw2 country_code.
+ * @param array $country_codes
+ *   An array of all bw2 countrycodes.
+ *
+ * @return string|null
+ *   The matching code or null.
  */
-function getCountryCode($bw2_code, $country_codes) {
-  foreach ($country_codes['DataList'] as $key => $code) {
+function get_country_code($bw2_code, array $country_codes) {
+  foreach ($country_codes['DataList'] as $code) {
     if ($code['Dimension_ID'] === $bw2_code) {
       return $code['Dimension_Code'];
     }
@@ -167,7 +257,7 @@ function getCountryCode($bw2_code, $country_codes) {
 }
 
 /**
- *
+ * Report import status and save bw2 version in config.
  */
 function _iq_group_bw2_finished_import($success, $results, $operations) {
   $msg = 'Import finished';

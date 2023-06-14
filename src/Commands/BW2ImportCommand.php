@@ -7,17 +7,23 @@ use Drupal\iq_group_bw2\Service\Importer;
 use Drush\Commands\DrushCommands;
 
 /**
- * A Drush commandfile.
- *
- * In addition to this file, you need a drush.services.yml
- * in root of your module, and a composer.json file that provides the name
- * of the services file to use.
- *
- * See these files for an example of injecting Drupal services:
- *   - http://cgit.drupalcode.org/devel/tree/src/Commands/DevelCommands.php
- *   - http://cgit.drupalcode.org/devel/tree/drush.services.yml
+ * Drush Command to import users from Bw2.
  */
 class BW2ImportCommand extends DrushCommands {
+
+  /**
+   * The Import service.
+   *
+   * @var \Drupal\iq_group_bw2\Service\Importer
+   */
+  protected $importer = NULL;
+
+  /**
+   * The entityTypeManager.
+   *
+   * @var \Drupal\Core\Logger\LoggerChannelFactoryInterface
+   */
+  protected $loggerChannelFactory = NULL;
 
   /**
    * Constructs a new BW2ImportCommand object.

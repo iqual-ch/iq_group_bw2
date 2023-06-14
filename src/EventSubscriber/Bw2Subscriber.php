@@ -4,25 +4,28 @@ namespace Drupal\iq_group_bw2\EventSubscriber;
 
 use Drupal\iq_group\Event\IqGroupEvent;
 use Drupal\iq_group\IqGroupEvents;
-use Drupal\bw2_api\bw2ApiServiceInterface;
+use Drupal\bw2_api\Bw2ApiServiceInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
  * Event subscriber to handle bw2 events dispatched by iq_group module.
  */
-class bw2Subscriber implements EventSubscriberInterface {
+class Bw2Subscriber implements EventSubscriberInterface {
 
   /**
-   * @var \Drupal\bw2_api\bw2ApiServiceInterface
+   * The Bw2 API service.
+   *
+   * @var \Drupal\bw2_api\Bw2ApiServiceInterface
    */
   protected $bw2ApiService;
 
   /**
-   * OrderReceiptSubscriber constructor.
+   * Bw2Subscriber constructor.
    *
-   * @param \Drupal\bw2_api\bw2ApiServiceInterface $bw2_api_service
+   * @param \Drupal\bw2_api\Bw2ApiServiceInterface $bw2_api_service
+   *   The Bw2 API service.
    */
-  public function __construct(bw2ApiServiceInterface $bw2_api_service) {
+  public function __construct(Bw2ApiServiceInterface $bw2_api_service) {
     $this->bw2ApiService = $bw2_api_service;
   }
 
@@ -50,10 +53,12 @@ class bw2Subscriber implements EventSubscriberInterface {
         \Drupal::logger('iq_group_bw2')->notice('bw2 update event triggered by anonymous user - do nothing.');
       }
       else {
-        /** @var \Drupal\user\UserInterface $user */
+        /**
+         *  @var \Drupal\user\UserInterface $user
+         */
         $user = $event->getUser();
         if ($user->hasField('field_iq_group_bw2_id')) {
-          /**
+          /*
            * 3 cases:
            * - newly created user, not active yet
            * - newly created user, active
@@ -101,7 +106,7 @@ class bw2Subscriber implements EventSubscriberInterface {
      * $profile_data['Account_Salutation'] = $salutation;
      * $profile_data['Account_PostalCode'] = $pobox;
      * $profile_data['Account_Birthday'] = $birthdate;
-    */
+     */
     $profile_data = [
       'Account_Active' => $user->status->value,
       'Account_Salutation' => $salutation,
