@@ -95,7 +95,7 @@ class Bw2Subscriber implements EventSubscriberInterface {
     $address = $user->get('field_iq_user_base_address')->getValue();
     $address = reset($address);
     $countryCode = ($address && isset($address['country_code'])) ? $this->bw2ApiService->getCountryCode($address['country_code']) : "";
-    $salutation = $user->get('field_iq_group_salutation')->value;
+    $salutation = ($user->hasField('field_iq_group_salutation')) ? $user->get('field_iq_group_salutation')->value : "";
 
     /*
      * @todo Add to GCB
