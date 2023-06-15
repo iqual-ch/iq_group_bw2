@@ -13,11 +13,15 @@
 /**
  * Alter the profile data before sending it to the API.
  *
- * @param array $profile_data
- *   The profile data to be altered.
+ * @param array $data
+ *   An array containing the profile data to be altered and the user entity.
  */
-function hook_iq_group_bw2_profile_data_alter(array &$profile_data) {
+function hook_iq_group_bw2_profile_data_alter(array &$data) {
   /*
+   * "$data" contains [
+   *    &$profile_data,
+   *    $user,
+   *  ]
    * Here you can manipulate $profile_data however you like.
    * Note that $profile_data is passed by reference (&profile_data),
    * so changes here will affect the original array.
