@@ -97,16 +97,6 @@ class Bw2Subscriber implements EventSubscriberInterface {
     $countryCode = ($address && isset($address['country_code'])) ? $this->bw2ApiService->getCountryCode($address['country_code']) : "";
     $salutation = ($user->hasField('field_iq_group_salutation')) ? $user->get('field_iq_group_salutation')->value : "";
 
-    /*
-     * @todo Add to GCB
-     *
-     * $salutation = $user->get('field_iq_user_base_salutation')->value;
-     * $pobox = $user->get('field_iq_user_base_adress_pobox')->value;
-     * $birthdate = $user->get('field_gcb_custom_birth_date')->value;
-     * $profile_data['Account_Salutation'] = $salutation;
-     * $profile_data['Account_PostalCode'] = $pobox;
-     * $profile_data['Account_Birthday'] = $birthdate;
-     */
     $profile_data = [
       'Account_Active' => $user->status->value,
       'Account_Salutation' => $salutation,
@@ -125,7 +115,11 @@ class Bw2Subscriber implements EventSubscriberInterface {
     ];
 
     // Allow other modules to alter the $items array.
-    \Drupal::moduleHandler()->alter('profile_data', $profile_data);
+    \Drupal::moduleHandler()->alter('profile_data', [
+      $user,
+      &$profile_data,
+      ]
+    );
 
     return $profile_data;
   }
