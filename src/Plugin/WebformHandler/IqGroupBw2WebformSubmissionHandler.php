@@ -96,8 +96,6 @@ class IqGroupBw2WebformSubmissionHandler extends WebformHandlerBase {
         ->invokeAll('iq_group_bw2_before_submission',
           [
             &$user_data,
-            $user,
-            $userExists,
             $form_state,
           ]
         );
