@@ -136,7 +136,9 @@ function process_user(
     $context['results']['imported']['users']++;
   }
   $user->setEmail($user_data['Account_Email1']);
-  $user->set('field_iq_group_salutation', $user_data['Account_Salutation']);
+  if ($user->hasField('field_iq_group_salutation')) {
+    $user->set('field_iq_group_salutation', $user_data['Account_Salutation']);
+  }
   $userCountryCode = get_country_code($user_data['Account_Country_Dimension_ID'], $countryCodes);
   $userLanguageCode = get_language_code($user_data['Account_Language_Dimension_ID'], $langCodes);
   $address = [
@@ -159,7 +161,7 @@ function process_user(
   \Drupal::moduleHandler()
     ->invokeAll('iq_group_bw2_before_import',
       [
-        &$user_data,
+        $user_data,
         $user,
         $userCountryCode,
         $userLanguageCode,
@@ -178,7 +180,7 @@ function process_user(
   \Drupal::moduleHandler()
     ->invokeAll('iq_group_bw2_after_import',
       [
-        &$user_data,
+        $user_data,
         $user,
         $userCountryCode,
         $userLanguageCode,
