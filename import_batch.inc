@@ -161,7 +161,7 @@ function process_user(
   \Drupal::moduleHandler()
     ->invokeAll('iq_group_bw2_before_import',
       [
-        $user_data,
+        &$user_data,
         $user,
         $userCountryCode,
         $userLanguageCode,
