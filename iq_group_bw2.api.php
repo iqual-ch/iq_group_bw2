@@ -5,6 +5,8 @@
  * Hooks for the iq_group_bw2 module.
  */
 
+use Drupal\user\UserInterface;
+
 /**
  * @addtogroup hooks
  * @{
@@ -15,13 +17,11 @@
  *
  * @param array $data
  *   An array containing the profile data to be altered and the user entity.
+ * @param \Drupal\user\UserInterface $user
+ *   The user to process.
  */
-function hook_iq_group_bw2_profile_data_alter(array &$data) {
+function hook_iq_group_bw2_profile_data_alter(array &$profile_data, UserInterface $user) {
   /*
-   * "$data" contains [
-   *    &$profile_data,
-   *    $user,
-   *  ]
    * Here you can manipulate $profile_data however you like.
    * Note that $profile_data is passed by reference (&profile_data),
    * so changes here will affect the original array.

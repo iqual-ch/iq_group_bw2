@@ -115,11 +115,7 @@ class Bw2Subscriber implements EventSubscriberInterface {
     ];
 
     // Allow other modules to alter the $items array.
-    \Drupal::moduleHandler()->alter('profile_data', [
-      $user,
-      &$profile_data,
-      ]
-    );
+    \Drupal::moduleHandler()->alter('profile_data', $profile_data, $user);
 
     return $profile_data;
   }
