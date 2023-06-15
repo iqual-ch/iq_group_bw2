@@ -5,6 +5,7 @@
  * Hooks for the iq_group_bw2 module.
  */
 
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\user\UserInterface;
 
 /**
@@ -31,66 +32,91 @@ function hook_iq_group_bw2_profile_data_alter(array &$profile_data, UserInterfac
 /**
  * Alter the data before importing users.
  *
- * @param array $data
+ * @param array $user_data
  *   The user data to be altered before the import.
+ * @param \Drupal\user\UserInterface $user
+ *   The user to import data into.
+ * @param string $countryCode
+ *   The unique id for the country from bw2.
+ * @param string $langCode
+ *   The unique id for the language from bw2.
  */
-function hook_iq_group_bw2_before_import(array &$data) {
+function hook_iq_group_bw2_before_import(
+  array &$user_data, 
+  UserInterface $user, 
+  $countryCode, 
+  $langCode
+) {
   /*
-   * "$data" contains [
-   *    &$user_data,
-   *    $user,
-   *    $userCountryCode,
-   *    $userLanguageCode,
-   *  ]
+   * Here you can manipulate $user_data and user however you like before saving the user.
+   * Note that $user_data is passed by reference (&user_data),
+   * so changes here will affect the original array.
    */
 }
 
 /**
  * Alter the data after importing users.
- *
- * @param array $data
- *   The user data to be altered after the import.
+ * 
+ * @param array $user_data
+ *   The user data that has been imported.
+ * @param \Drupal\user\UserInterface $user
+ *   The user entity.
+ * @param string $countryCode
+ *   The unique id for the country from bw2.
+ * @param string $langCode
+ *   The unique id for the language from bw2.
  */
-function hook_iq_group_bw2_after_import(array &$data) {
+function hook_iq_group_bw2_after_import(
+  array $user_data, 
+  UserInterface $user, 
+  $countryCode, 
+  $langCode
+) {
   /*
-   * "$data" contains [
-   *    &$user_data,
-   *    $user,
-   *    $userCountryCode,
-   *    $userLanguageCode,
-   *  ]
+   * Here you perform further operations after import the data into the user.
    */
 }
 
 /**
  * Alter the data before webform submission.
  *
- * @param array $data
- *   The user data to be altered before submission.
+ * @param array $user_data
+ *   The user data that will be send to bw2.
+ * @param \Drupal\user\UserInterface $user
+ *   The user entity.
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ *   The submitted form state.
  */
-function hook_iq_group_bw2_before_submission(array &$data) {
+function hook_iq_group_bw2_before_submission(
+  array &$user_data,
+  UserInterface $user,
+  FormStateInterface $form_state
+) {
   /*
-   * "$data" contains [
-   *    &$user_data,
-   *    $user,
-   *    $form_state,
-   *  ]
+   * Here you can manipulate $user_data and user however you like before saving the user.
+   * Note that $user_data is passed by reference (&user_data),
+   * so changes here will affect the original array.
    */
 }
 
 /**
  * Perform other operations after webform submission.
  *
- * @param array $data
- *   The user data to be altered after the import.
+ * @param array $user_data
+ *   The user data that will be send to bw2.
+ * @param \Drupal\user\UserInterface $user
+ *   The user entity.
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ *   The submitted form state.
  */
-function hook_iq_group_bw2_after_submission(array &$data) {
+function hook_iq_group_bw2_after_submission(
+  array &$user_data,
+  UserInterface $user,
+  FormStateInterface $form_state
+) {
   /*
-   * "$data" contains [
-   *    &$user_data,
-   *    $user,
-   *    $form_state,
-   *  ]
+   * Here you perform further operations after submitting the data,
+   * like custom redirection.
    */
 }
 

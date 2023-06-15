@@ -123,7 +123,7 @@ class IqGroupBw2WebformSubmissionHandler extends WebformHandlerBase {
     \Drupal::moduleHandler()
       ->invokeAll('iq_group_bw2_after_submission',
         [
-          &$user_data,
+          $user_data,
           $user,
           $form_state,
         ]
