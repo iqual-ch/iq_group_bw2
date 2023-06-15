@@ -84,12 +84,15 @@ function hook_iq_group_bw2_after_import(
  *   The user data that will be send to bw2.
  * @param \Drupal\user\UserInterface $user
  *   The user entity.
+ * @param bool $userExists
+ *   True if the user already existed in Drupal.
  * @param \Drupal\Core\Form\FormStateInterface $form_state
  *   The submitted form state.
  */
 function hook_iq_group_bw2_before_submission(
   array &$user_data,
   UserInterface $user,
+  bool $userExists,
   FormStateInterface $form_state
 ) {
   /*
@@ -106,12 +109,15 @@ function hook_iq_group_bw2_before_submission(
  *   The user data that will be send to bw2.
  * @param \Drupal\user\UserInterface $user
  *   The user entity.
+ * @param bool $userExists
+ *   True if the user already existed in Drupal.
  * @param \Drupal\Core\Form\FormStateInterface $form_state
  *   The submitted form state.
  */
 function hook_iq_group_bw2_after_submission(
   array &$user_data,
   UserInterface $user,
+  bool $userExists,
   FormStateInterface $form_state
 ) {
   /*
