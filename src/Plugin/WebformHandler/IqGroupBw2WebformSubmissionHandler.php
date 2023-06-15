@@ -37,16 +37,16 @@ class IqGroupBw2WebformSubmissionHandler extends WebformHandlerBase {
     $user = NULL;
 
     if ($form_state->getValue('customer_mail')) {
-      $user = \Drupal::entityTypeManager()->getStorage('user')->loadByProperties(
+      $users = \Drupal::entityTypeManager()->getStorage('user')->loadByProperties(
         [
           'mail' => $form_state->getValue('customer_mail'),
         ]
       );
-      if (count($user) == 0) {
+      if (count($users) == 0) {
         $userExists = FALSE;
       }
       else {
-        $user = reset($user);
+        $user = reset($users);
       }
     }
     // If user exists, attribute the submission to the user.

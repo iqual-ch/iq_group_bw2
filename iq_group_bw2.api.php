@@ -101,7 +101,7 @@ function hook_iq_group_bw2_before_submission(
  *
  * @param array $user_data
  *   The user data that will be send to bw2.
- * @param \Drupal\user\UserInterface $user
+ * @param \Drupal\user\UserInterface|null $user
  *   The user entity.
  * @param bool $userExists
  *   True if the user already existed in Drupal.
@@ -110,7 +110,7 @@ function hook_iq_group_bw2_before_submission(
  */
 function hook_iq_group_bw2_after_submission(
   array &$user_data,
-  UserInterface $user,
+  mixed $user,
   bool $userExists,
   FormStateInterface $form_state
 ) {
