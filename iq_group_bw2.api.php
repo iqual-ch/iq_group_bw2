@@ -109,7 +109,7 @@ function hook_iq_group_bw2_before_submission(
  *   The submitted form state.
  */
 function hook_iq_group_bw2_after_submission(
-  array &$user_data,
+  array $user_data,
   mixed $user,
   bool $userExists,
   FormStateInterface $form_state
