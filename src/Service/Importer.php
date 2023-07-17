@@ -2,9 +2,9 @@
 
 namespace Drupal\iq_group_bw2\Service;
 
+use Drupal\bw2_api\Bw2ApiServiceInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
-use Drupal\bw2_api\Bw2ApiServiceInterface;
 
 /**
  * A service to import users from bw2 into drupal.

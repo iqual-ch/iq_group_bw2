@@ -42,9 +42,9 @@ function hook_iq_group_bw2_profile_data_alter(array &$profile_data, UserInterfac
  *   The unique id for the language from bw2.
  */
 function hook_iq_group_bw2_before_import(
-  array &$user_data, 
-  UserInterface $user, 
-  $countryCode, 
+  array &$user_data,
+  UserInterface $user,
+  $countryCode,
   $langCode
 ) {
   /*
@@ -56,7 +56,7 @@ function hook_iq_group_bw2_before_import(
 
 /**
  * Alter the data after importing users.
- * 
+ *
  * @param array $user_data
  *   The user data that has been imported.
  * @param \Drupal\user\UserInterface $user
@@ -67,9 +67,9 @@ function hook_iq_group_bw2_before_import(
  *   The unique id for the language from bw2.
  */
 function hook_iq_group_bw2_after_import(
-  array $user_data, 
-  UserInterface $user, 
-  $countryCode, 
+  array $user_data,
+  UserInterface $user,
+  $countryCode,
   $langCode
 ) {
   /*
