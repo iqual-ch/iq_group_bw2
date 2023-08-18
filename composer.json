@@ -9,7 +9,7 @@
     }
   ],
   "require": {
-    "iqual/iq_group": "^3.0",
+    "iqual/iq_group": "dev-misc/rework",
     "iqual/bw2_api": "^2.0"
   }
 }
