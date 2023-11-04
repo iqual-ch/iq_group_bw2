@@ -16,7 +16,7 @@ use Drupal\user\UserInterface;
 /**
  * Alter the profile data before sending it to the API.
  *
- * @param array $data
+ * @param array $profile_data
  *   An array containing the profile data to be altered and the user entity.
  * @param \Drupal\user\UserInterface $user
  *   The user to process.
@@ -48,8 +48,8 @@ function hook_iq_group_bw2_before_import(
   $langCode
 ) {
   /*
-   * Here you can manipulate $user_data and user however you like before saving the user.
-   * Note that $user_data is passed by reference (&user_data),
+   * Here you can manipulate $user_data and user however you like before saving
+   * the user. Note that $user_data is passed by reference (&user_data),
    * so changes here will affect the original array.
    */
 }
