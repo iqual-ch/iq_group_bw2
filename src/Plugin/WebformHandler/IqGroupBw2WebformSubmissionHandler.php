@@ -2,8 +2,8 @@
 
 namespace Drupal\iq_group_bw2\Plugin\WebformHandler;
 
-use Drupal\webform\Plugin\WebformHandlerBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\webform\Plugin\WebformHandlerBase;
 use Drupal\webform\WebformSubmissionInterface;
 
 /**
@@ -101,12 +101,12 @@ class IqGroupBw2WebformSubmissionHandler extends WebformHandlerBase {
         );
 
       /*
-      * If the user does not exists and register is true,
-      * create the user, register the user to the iq groups
-      * and attribute the submission to the user.
-      * This will also trigger an event and send data to BW2.
-      * Default to FALSE.
-      */
+       * If the user does not exists and register is true,
+       * create the user, register the user to the iq groups
+       * and attribute the submission to the user.
+       * This will also trigger an event and send data to BW2.
+       * Default to FALSE.
+       */
       if ($user_data['register_user']) {
         if (!empty(\Drupal::config('iq_group.settings')->get('default_redirection'))) {
           $destination = \Drupal::config('iq_group.settings')->get('default_redirection');

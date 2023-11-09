@@ -2,9 +2,9 @@
 
 namespace Drupal\iq_group_bw2\EventSubscriber;
 
+use Drupal\bw2_api\Bw2ApiServiceInterface;
 use Drupal\iq_group\Event\IqGroupEvent;
 use Drupal\iq_group\IqGroupEvents;
-use Drupal\bw2_api\Bw2ApiServiceInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -49,7 +49,7 @@ class Bw2Subscriber implements EventSubscriberInterface {
       $uri = \Drupal::request()->getRequestUri();
       // If user is anonymous and the referer does not come from opt-in
       // then it means the update came from the import task -> we do nothing.
-      if (\Drupal::currentUser()->isAnonymous() && strpos($uri, 'de/auth') === FALSE) {
+      if (\Drupal::currentUser()->isAnonymous() && !str_contains($uri, 'de/auth')) {
         \Drupal::logger('iq_group_bw2')->notice('bw2 update event triggered by anonymous user - do nothing.');
       }
       else {
