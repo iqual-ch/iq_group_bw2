@@ -1,4 +1,4 @@
-# Integration of GCB Drupal Website with the CRM BW2
+# Integration of Drupal Websites with the CRM BW2
 
 This module has two objectives:
 * on every user creation / user update request, a listener is triggered.
@@ -12,4 +12,3 @@ This module require the iqual/bw2_api module.
 
 * Add the module as usual and activate.
 * Configure the API under /admin/config/services/bw2-api
-* All informations are available on lastpass notice GCB - BW2 API Portal ID
