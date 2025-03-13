@@ -34,7 +34,7 @@ class Bw2Subscriber implements EventSubscriberInterface {
    */
   public static function getSubscribedEvents() {
     return [
-      IqGroupEvents::USER_PROFILE_UPDATE => [['updatebw2Contact', 300]],
+      //IqGroupEvents::USER_PROFILE_UPDATE => [['updatebw2Contact', 300]],
     ];
   }
 
