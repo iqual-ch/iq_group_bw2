@@ -1,0 +1,37 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the IQ Group BW2 module.
+ */
+
+use Drupal\webform\Entity\Webform;
+
+/**
+ * Implements hook_uninstall().
+ */
+function iq_group_bw2_uninstall() {
+  // Remove iq_group_bw2_submission_handler from all webforms.
+  $webforms = Webform::loadMultiple();
+
+  foreach ($webforms as $webform) {
+    $handlers = $webform->getHandlers();
+    $handler_removed = FALSE;
+
+    foreach ($handlers as $handler_id => $handler) {
+      if ($handler->getPluginId() === 'iq_group_bw2_submission_handler') {
+        $webform->deleteWebformHandler($handler);
+        $handler_removed = TRUE;
+        \Drupal::logger('iq_group_bw2')->info('Removed iq_group_bw2_submission_handler from webform: @webform_id', [
+          '@webform_id' => $webform->id(),
+        ]);
+      }
+    }
+
+    if ($handler_removed) {
+      $webform->save();
+    }
+  }
+
+  \Drupal::messenger()->addMessage(t('IQ Group BW2 submission handlers have been removed from all webforms.'));
+}
